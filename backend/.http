@@ -1,0 +1,31 @@
+POST http://127.0.0.1:8000/cars/
+Content-Type: application/json
+
+{
+    "name": "R1S Quad-Motor",
+    "brand": "Rivian",
+    "category": "SUV",
+    "pricePerDay": 145,
+    "images": "rivian_r1s.jpg",
+    "specs": "Quad-Motor AWD, 835 hp, 7 drive modes",
+    "description": "An adventure-ready electric SUV built for extreme off-roading and exceptional on-road comfort."
+}
+### Complete Replacement of a Car Record (PUT)
+PUT http://127.0.0.1:8000/cars/76c15e59-c316-45f3-bab5-67a71278796e
+Content-Type: application/json
+
+{
+    "name": "Model Y Long Range",
+    "brand": "Tesla",
+    "category": "SUV",
+    "pricePerDay": 125,
+    "images": "tesla_y_v2.jpg",
+    "specs": "Dual-Motor AWD, 4.8s 0-60mph",
+    "available": true,
+    "featured": true,
+    "description": "An upgraded, fully charged luxury family vehicle choice."
+}
+
+### 
+DELETE http://127.0.0.1:8000/cars/76c15e59-c316-45f3-bab5-67a71278796e
+Content-Type: application/json
