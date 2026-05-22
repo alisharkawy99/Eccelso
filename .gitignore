@@ -1,0 +1,4 @@
+# Local / IDE (repo root)
+.cursorrules
+.vscode/settings.json
+.vscode/extensions.json
