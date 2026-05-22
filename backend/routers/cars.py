@@ -1,6 +1,6 @@
 from uuid import UUID
 from fastapi import APIRouter, status  #  Imported status
-from services.cars import create_car, get_all_cars, edit_car, remove_car
+from services.cars import create_car, get_all_cars, edit_car, remove_car, get_car
 from app.database import SessionDep
 from schemas.cars import CarCreate, CarResponse, EditCar
 
@@ -10,6 +10,11 @@ router = APIRouter(prefix="/cars", tags=["Cars"])
 @router.get("/", response_model=list[CarResponse])
 def list_cars(session: SessionDep):
     return get_all_cars(session)
+
+
+@router.get("/{car_id}", response_model=CarResponse)
+def find_car(session: SessionDep, car_id: UUID):
+    return get_all_cars(session, car_id)
 
 
 @router.post("/", response_model=CarResponse, status_code=status.HTTP_201_CREATED)

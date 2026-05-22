@@ -27,5 +27,8 @@ Content-Type: application/json
 }
 
 ### 
-DELETE http://127.0.0.1:8000/cars/76c15e59-c316-45f3-bab5-67a71278796e
+DELETE http://127.0.0.1:8000/cars/7886f51b-2d78-43ba-b860-010c195f4b66
 Content-Type: application/json
+
+######
+GET http://127.0.0.1:8000/cars/7886f51b-2d78-43ba-b860-010c195f4b66

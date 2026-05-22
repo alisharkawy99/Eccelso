@@ -2,3 +2,10 @@
 .cursorrules
 .vscode/settings.json
 .vscode/extensions.json
+# Secrets
+backend/.env
+
+# Python
+venv/
+__pycache__/
+*.pyc
