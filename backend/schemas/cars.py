@@ -1,6 +1,22 @@
-from typing import Optional
+from enum import Enum
+from pickle import DICT
+from typing import Optional, List, Dict
 from pydantic import BaseModel, ConfigDict, Field
 from uuid import UUID
+
+
+class CarSpecs(BaseModel):
+    engine: str
+    power: str
+    seats: int
+    transmission: str
+
+
+class CarCategory(Enum):
+    SUPERCAR = "supercar"
+    LUXURYSEDAN = "luxury_sedan"
+    SPORTS = "sports"
+    PREMIUMSUV = "premium_suv"
 
 
 class CarResponse(BaseModel):
@@ -10,8 +26,8 @@ class CarResponse(BaseModel):
     brand: str
     category: str
     price_per_day: int = Field(..., serialization_alias="pricePerDay")
-    images: str
-    specs: str
+    images: List[str]
+    specs: CarSpecs
     available: bool
     featured: bool
     description: str
@@ -25,8 +41,8 @@ class CarCreate(BaseModel):
     brand: str
     category: str
     price_per_day: int = Field(..., alias="pricePerDay")
-    images: str
-    specs: str
+    images: list[str]
+    specs: CarSpecs
     available: bool = True
     featured: bool = True
     description: str
@@ -40,7 +56,7 @@ class EditCar(BaseModel):
     category: Optional[str] = None
     price_per_day: Optional[int] = Field(None, alias="pricePerDay")
     images: Optional[str] = None
-    specs: Optional[str] = None
+    specs: Optional[CarSpecs] = None
     available: Optional[bool] = None
     featured: Optional[bool] = None
     description: Optional[str] = None

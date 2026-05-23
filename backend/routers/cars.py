@@ -8,13 +8,15 @@ router = APIRouter(prefix="/cars", tags=["Cars"])
 
 
 @router.get("/", response_model=list[CarResponse])
-def list_cars(session: SessionDep):
-    return get_all_cars(session)
+def list_cars(
+    session: SessionDep, car_category: str | None = None, featured: bool | None = None
+):
+    return get_all_cars(session, car_category, featured)
 
 
 @router.get("/{car_id}", response_model=CarResponse)
 def find_car(session: SessionDep, car_id: UUID):
-    return get_all_cars(session, car_id)
+    return get_car(session, car_id)
 
 
 @router.post("/", response_model=CarResponse, status_code=status.HTTP_201_CREATED)

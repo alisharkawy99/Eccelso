@@ -2,13 +2,24 @@ POST http://127.0.0.1:8000/cars/
 Content-Type: application/json
 
 {
-    "name": "R1S Quad-Motor",
-    "brand": "Rivian",
-    "category": "SUV",
-    "pricePerDay": 145,
-    "images": "rivian_r1s.jpg",
-    "specs": "Quad-Motor AWD, 835 hp, 7 drive modes",
-    "description": "An adventure-ready electric SUV built for extreme off-roading and exceptional on-road comfort."
+  "name": "Ferrari 488 GTB",
+  "brand": "Ferrari",
+  "category": "supercar",
+  "pricePerDay": 18000,
+  "images": [
+    "https://images.unsplash.com/photo-1592198084033-aade902d1aae?w=1200&q=85",
+    "https://images.unsplash.com/photo-1583121274602-3e2820c69888?w=1200&q=85",
+    "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=1200&q=85"
+  ],
+  "specs": {
+    "engine": "3.9L Twin-Turbo V8",
+    "power": "660 hp",
+    "seats": 2,
+    "transmission": "7-Speed DCT"
+  },
+  "available": true,
+  "featured": true,
+  "description": "The Ferrari 488 GTB is a masterpiece of Italian engineering. With a 3.9L twin-turbo V8 producing 660 horsepower, it delivers an exhilarating driving experience unlike any other."
 }
 ### Complete Replacement of a Car Record (PUT)
 PUT http://127.0.0.1:8000/cars/76c15e59-c316-45f3-bab5-67a71278796e

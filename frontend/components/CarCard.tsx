@@ -1,23 +1,23 @@
-'use client';
+"use client";
 
-import Image from 'next/image';
-import { useTranslations, useLocale } from 'next-intl';
-import { Link } from '@/navigation';
-import { Car } from '@/types';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { formatPrice } from '@/lib/utils';
-import { CATEGORY_LABELS } from '@/types';
+import Image from "next/image";
+import { useTranslations, useLocale } from "next-intl";
+import { Link } from "@/navigation";
+import { Car } from "@/types";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { formatPrice } from "@/lib/utils";
+import { CATEGORY_LABELS } from "@/types";
 
 interface CarCardProps {
   car: Car;
 }
 
 export default function CarCard({ car }: CarCardProps) {
-  const t = useTranslations('fleet');
+  const t = useTranslations("fleet");
   const locale = useLocale();
 
-  const categoryLabel = CATEGORY_LABELS[car.category][locale as 'en' | 'ar'];
+  const categoryLabel = CATEGORY_LABELS[car.category][locale as "en" | "ar"];
 
   return (
     <div className="card-glass group overflow-hidden flex flex-col">
@@ -32,13 +32,6 @@ export default function CarCard({ car }: CarCardProps) {
         />
         <div className="absolute inset-0 bg-gradient-to-t from-luxury-black/80 via-transparent to-transparent" />
 
-        {/* Availability badge */}
-        <div className="absolute top-3 right-3 rtl:right-auto rtl:left-3">
-          <Badge variant={car.available ? 'available' : 'unavailable'}>
-            {car.available ? t('available') : t('unavailable')}
-          </Badge>
-        </div>
-
         {/* Category badge */}
         <div className="absolute bottom-3 left-3 rtl:left-auto rtl:right-3">
           <Badge variant="gold">{categoryLabel}</Badge>
@@ -47,11 +40,21 @@ export default function CarCard({ car }: CarCardProps) {
 
       {/* Content */}
       <div className="p-5 flex flex-col flex-1 gap-4">
-        <div>
-          <h3 className="font-playfair text-lg font-semibold text-cream leading-tight">
-            {car.name}
-          </h3>
-          <p className="text-xs text-cream/40 tracking-widest uppercase mt-0.5">{car.brand}</p>
+        <div className="flex flex-row justify-between">
+          <div>
+            <h3 className="font-playfair text-lg font-semibold text-cream leading-tight">
+              {car.name}
+            </h3>
+            <p className="text-xs text-cream/40 tracking-widest uppercase mt-0.5">
+              {car.brand}
+            </p>
+          </div>
+          {/* Availability badge */}
+          <div>
+            <Badge variant={car.available ? "available" : "unavailable"}>
+              {car.available ? t("available") : t("unavailable")}
+            </Badge>
+          </div>
         </div>
 
         {/* Specs mini */}
@@ -60,8 +63,8 @@ export default function CarCard({ car }: CarCardProps) {
             <span className="text-gold/70">⚡</span> {car.specs.power}
           </div>
           <div className="text-xs text-cream/50">
-            <span className="text-gold/70">💺</span> {car.specs.seats}{' '}
-            {locale === 'ar' ? 'مقاعد' : 'seats'}
+            <span className="text-gold/70">💺</span> {car.specs.seats}{" "}
+            {locale === "ar" ? "مقاعد" : "seats"}
           </div>
           <div className="text-xs text-cream/50 col-span-2 truncate">
             <span className="text-gold/70">🔧</span> {car.specs.engine}
@@ -72,19 +75,13 @@ export default function CarCard({ car }: CarCardProps) {
 
         {/* Price + CTA */}
         <div className="flex items-end justify-between gap-3 pt-3 border-t border-luxury-border/30">
-          <div>
-            <p className="text-xl font-playfair font-bold text-gold">
-              {formatPrice(car.pricePerDay, locale)}
-            </p>
-            <p className="text-xs text-cream/30 tracking-wide">{t('perDay')}</p>
-          </div>
           <Link href={`/fleet/${car.id}`}>
             <Button
               variant="outline"
               size="sm"
-              className={!car.available ? 'opacity-50 cursor-not-allowed' : ''}
+              className={!car.available ? "opacity-50 cursor-not-allowed" : ""}
             >
-              {t('viewDetails')}
+              {t("viewDetails")}
             </Button>
           </Link>
         </div>
