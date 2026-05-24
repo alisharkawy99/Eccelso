@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.database import engine, Base
 from routers.cars import router as cars_router
+from app.config import settings
 
 origins = [
     "http://localhost:3000",  # Next.js / React default

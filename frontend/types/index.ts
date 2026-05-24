@@ -1,4 +1,4 @@
-export type CarCategory = 'supercar' | 'luxury_sedan' | 'sports' | 'premium_suv';
+export type CarCategory = 'supercar' | 'luxury_sedan' | 'sport' | 'premium_suv' | 'sports';
 
 export interface CarSpecs {
   engine: string;
@@ -43,6 +43,7 @@ export interface AdminCar extends Car {
 export const CATEGORY_LABELS: Record<CarCategory, { en: string; ar: string }> = {
   supercar: { en: 'Supercar', ar: 'سيارة فائقة' },
   luxury_sedan: { en: 'Luxury Sedan', ar: 'سيدان فاخرة' },
+  sport: { en: 'Sports', ar: 'رياضية' },
   sports: { en: 'Sports', ar: 'رياضية' },
   premium_suv: { en: 'Premium SUV', ar: 'SUV فاخرة' },
 };

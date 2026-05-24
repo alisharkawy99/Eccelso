@@ -3,7 +3,9 @@ from uuid import UUID
 from models.cars import Car
 from app.database import Session
 from schemas.cars import CarCreate, CarResponse, EditCar
-from fastapi import HTTPException, status
+from fastapi import HTTPException, status, UploadFile
+import cloudinary.uploader
+from typing import List
 
 
 def get_all_cars(
@@ -18,7 +20,7 @@ def get_all_cars(
     return cars
 
 
-def create_car(db: Session, car_data: CarCreate) -> Car:
+def create_car(db: Session, car_data: CarCreate, images: List[UploadFile]) -> Car:
     duplicate_name = db.query(Car).filter(Car.name == car_data.name).first()
     if duplicate_name:
         db.rollback()  # Always roll back the session after a failure
@@ -26,7 +28,13 @@ def create_car(db: Session, car_data: CarCreate) -> Car:
             status_code=status.HTTP_409_CONFLICT,
             detail="car name already exists.",
         )
+    images_urls = []
+    for image in images:
+        result = cloudinary.uploader.upload(image.file)
+        images_urls.append(result["secure_url"])
+
     car_dict = car_data.model_dump()
+    car_dict["images"] = images_urls
     new_car = Car(**car_dict)
     db.add(new_car)
     db.commit()

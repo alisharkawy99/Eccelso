@@ -6,14 +6,13 @@ import { Link } from "@/navigation";
 import { Car } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { formatPrice } from "@/lib/utils";
 import { CATEGORY_LABELS } from "@/types";
 
-interface CarCardProps {
+interface ICarCardProps {
   car: Car;
 }
 
-export default function CarCard({ car }: CarCardProps) {
+export default function CarCard({ car }: ICarCardProps) {
   const t = useTranslations("fleet");
   const locale = useLocale();
 

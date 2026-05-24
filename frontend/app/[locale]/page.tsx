@@ -1,24 +1,26 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import Image from 'next/image';
-import { useTranslations, useLocale } from 'next-intl';
-import { Link } from '@/navigation';
-import { Car } from '@/types';
-import { getFeaturedCars } from '@/lib/api';
-import CarCard from '@/components/CarCard';
-import { Button } from '@/components/ui/button';
-import { Shield, Star, Zap } from 'lucide-react';
-import { InstagramIcon } from '@/components/ui/instagram-icon';
+import { useEffect, useState } from "react";
+import Image from "next/image";
+import { useTranslations, useLocale } from "next-intl";
+import { Link } from "@/navigation";
+import { Car } from "@/types";
+import { getFeaturedCars } from "@/lib/api";
+import CarCard from "@/components/CarCard";
+import { Button } from "@/components/ui/button";
+import { Shield, Star, Zap } from "lucide-react";
+import { InstagramIcon } from "@/components/ui/instagram-icon";
+import Modal from "@/components/Modal";
+import CarForm from "@/components/CarForm";
 
 export default function HomePage() {
-  const t = useTranslations('home');
+  const t = useTranslations("home");
   const locale = useLocale();
-  const isRTL = locale === 'ar';
+  const isRTL = locale === "ar";
 
   const [featuredCars, setFeaturedCars] = useState<Car[]>([]);
   const [loading, setLoading] = useState(true);
-
+  const [openModal, setOpenModal] = useState(false);
   useEffect(() => {
     getFeaturedCars().then((cars) => {
       setFeaturedCars(cars);
@@ -27,27 +29,27 @@ export default function HomePage() {
   }, []);
 
   const stats = [
-    { value: '500+', label: t('statsClients') },
-    { value: '8+', label: t('statsFleet') },
-    { value: '4', label: t('statsYears') },
-    { value: '24/7', label: t('statsSupport') },
+    { value: "500+", label: t("statsClients") },
+    { value: "8+", label: t("statsFleet") },
+    { value: "4", label: t("statsYears") },
+    { value: "24/7", label: t("statsSupport") },
   ];
 
   const whyItems = [
     {
       icon: <Star className="w-6 h-6 text-gold" />,
-      title: t('whyPremiumTitle'),
-      desc: t('whyPremiumDesc'),
+      title: t("whyPremiumTitle"),
+      desc: t("whyPremiumDesc"),
     },
     {
       icon: <Shield className="w-6 h-6 text-gold" />,
-      title: t('whyTrustedTitle'),
-      desc: t('whyTrustedDesc'),
+      title: t("whyTrustedTitle"),
+      desc: t("whyTrustedDesc"),
     },
     {
       icon: <Zap className="w-6 h-6 text-gold" />,
-      title: t('whyFlexibleTitle'),
-      desc: t('whyFlexibleDesc'),
+      title: t("whyFlexibleTitle"),
+      desc: t("whyFlexibleDesc"),
     },
   ];
 
@@ -69,31 +71,36 @@ export default function HomePage() {
         </div>
 
         {/* Content */}
-        <div className={`relative z-10 text-center px-4 animate-fade-in${isRTL ? ' text-center' : ''}`}>
+        <div
+          className={`relative z-10 text-center px-4 animate-fade-in${isRTL ? " text-center" : ""}`}
+        >
           <p className="text-xs tracking-[0.4em] uppercase text-gold mb-4">
-            {locale === 'ar' ? 'القاهرة، مصر' : 'Cairo, Egypt'}
+            {locale === "ar" ? "القاهرة، مصر" : "Cairo, Egypt"}
           </p>
           <h1 className="font-playfair text-6xl sm:text-8xl lg:text-9xl font-bold tracking-[0.08em] text-cream uppercase leading-none">
-            {t('heroTitle')}
+            {t("heroTitle")}
           </h1>
           <p className="text-sm sm:text-base tracking-[0.3em] text-gold uppercase mt-2 mb-3">
-            {t('heroSubtitle')}
+            {t("heroSubtitle")}
           </p>
           <div className="divider-gold mb-6" />
           <p className="text-cream/60 text-sm sm:text-base tracking-widest uppercase mb-10">
-            {t('heroTagline')}
+            {t("heroTagline")}
           </p>
-          <div className={`flex flex-col sm:flex-row gap-4 justify-center${isRTL ? ' sm:flex-row-reverse' : ''}`}>
+          <div
+            className={`flex flex-col sm:flex-row gap-4 justify-center${isRTL ? " sm:flex-row-reverse" : ""}`}
+          >
             <Link href="/fleet">
               <Button variant="gold" size="lg" className="w-full sm:w-auto">
-                {t('heroCTA1')}
+                {t("heroCTA1")}
               </Button>
             </Link>
             <Link href="/booking">
               <Button variant="outline" size="lg" className="w-full sm:w-auto">
-                {t('heroCTA2')}
+                {t("heroCTA2")}
               </Button>
             </Link>
+            <Button onClick={() => setOpenModal(true)}>openModal</Button>
           </div>
         </div>
 
@@ -113,7 +120,9 @@ export default function HomePage() {
                 <div className="font-playfair text-3xl sm:text-4xl font-bold text-gold-gradient">
                   {stat.value}
                 </div>
-                <div className="text-xs tracking-widest uppercase text-cream/40">{stat.label}</div>
+                <div className="text-xs tracking-widest uppercase text-cream/40">
+                  {stat.label}
+                </div>
               </div>
             ))}
           </div>
@@ -124,12 +133,16 @@ export default function HomePage() {
       <section className="section-padding bg-luxury-black">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 space-y-3">
-            <p className="text-xs tracking-[0.3em] uppercase text-gold">{locale === 'ar' ? 'الأسطول' : 'Fleet'}</p>
+            <p className="text-xs tracking-[0.3em] uppercase text-gold">
+              {locale === "ar" ? "الأسطول" : "Fleet"}
+            </p>
             <h2 className="font-playfair text-3xl sm:text-4xl font-bold text-cream">
-              {t('featuredTitle')}
+              {t("featuredTitle")}
             </h2>
             <div className="divider-gold" />
-            <p className="text-cream/50 text-sm max-w-md mx-auto">{t('featuredSubtitle')}</p>
+            <p className="text-cream/50 text-sm max-w-md mx-auto">
+              {t("featuredSubtitle")}
+            </p>
           </div>
 
           {loading ? (
@@ -149,7 +162,7 @@ export default function HomePage() {
           <div className="text-center mt-10">
             <Link href="/fleet">
               <Button variant="outline" size="lg">
-                {t('viewAll')}
+                {t("viewAll")}
               </Button>
             </Link>
           </div>
@@ -161,9 +174,11 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 space-y-3">
             <p className="text-xs tracking-[0.3em] uppercase text-gold">
-              {locale === 'ar' ? 'مميزاتنا' : 'Our Edge'}
+              {locale === "ar" ? "مميزاتنا" : "Our Edge"}
             </p>
-            <h2 className="font-playfair text-3xl sm:text-4xl font-bold text-cream">{t('whyTitle')}</h2>
+            <h2 className="font-playfair text-3xl sm:text-4xl font-bold text-cream">
+              {t("whyTitle")}
+            </h2>
             <div className="divider-gold" />
           </div>
 
@@ -171,11 +186,15 @@ export default function HomePage() {
             {whyItems.map((item) => (
               <div
                 key={item.title}
-                className={`text-center p-8 card-glass space-y-4${isRTL ? ' text-right' : ''}`}
+                className={`text-center p-8 card-glass space-y-4${isRTL ? " text-right" : ""}`}
               >
                 <div className="flex justify-center">{item.icon}</div>
-                <h3 className="font-playfair text-lg font-semibold text-cream">{item.title}</h3>
-                <p className="text-cream/40 text-sm leading-relaxed">{item.desc}</p>
+                <h3 className="font-playfair text-lg font-semibold text-cream">
+                  {item.title}
+                </h3>
+                <p className="text-cream/40 text-sm leading-relaxed">
+                  {item.desc}
+                </p>
               </div>
             ))}
           </div>
@@ -188,13 +207,15 @@ export default function HomePage() {
           <div className="w-14 h-14 bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto">
             <InstagramIcon className="w-7 h-7 text-white" />
           </div>
-          <h2 className="font-playfair text-3xl sm:text-4xl font-bold text-cream">{t('instagramTitle')}</h2>
-          <p className="text-gold tracking-widest">{t('instagramHandle')}</p>
+          <h2 className="font-playfair text-3xl sm:text-4xl font-bold text-cream">
+            {t("instagramTitle")}
+          </h2>
+          <p className="text-gold tracking-widest">{t("instagramHandle")}</p>
           <div className="divider-gold" />
           <p className="text-cream/40 text-sm">
-            {locale === 'ar'
-              ? 'تابع أحدث السيارات والعروض الحصرية على إنستغرام'
-              : 'Follow us for the latest cars, exclusive offers, and behind-the-scenes moments.'}
+            {locale === "ar"
+              ? "تابع أحدث السيارات والعروض الحصرية على إنستغرام"
+              : "Follow us for the latest cars, exclusive offers, and behind-the-scenes moments."}
           </p>
           <a
             href="https://instagram.com/eccelso.sharkawy"
@@ -202,10 +223,15 @@ export default function HomePage() {
             rel="noopener noreferrer"
             className="inline-block btn-gold px-8 py-3 text-xs tracking-widest uppercase"
           >
-            {t('instagramCTA')}
+            {t("instagramCTA")}
           </a>
         </div>
       </section>
+      <Modal
+        isOpen={openModal}
+        onClose={() => setOpenModal(false)}
+        content={<CarForm onClose={() => setOpenModal(false)} />}
+      />
     </>
   );
 }

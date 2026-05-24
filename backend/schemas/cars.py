@@ -7,8 +7,8 @@ from uuid import UUID
 
 class CarSpecs(BaseModel):
     engine: str
-    power: str
-    seats: int
+    power: Optional[str] = None  # Now optional
+    seats: Optional[int] = None
     transmission: str
 
 
