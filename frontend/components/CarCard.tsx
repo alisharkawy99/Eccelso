@@ -7,14 +7,19 @@ import { Car } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CATEGORY_LABELS } from "@/types";
-
+import { useState } from "react";
+import Modal from "./Modal";
+import CarForm from "./CarForm";
+import axios from "axios";
 interface ICarCardProps {
   car: Car;
+  onDelete?: () => Promise<void>;
 }
 
-export default function CarCard({ car }: ICarCardProps) {
+export default function CarCard({ car, onDelete }: ICarCardProps) {
   const t = useTranslations("fleet");
   const locale = useLocale();
+  const [openModal, setOpenModal] = useState(false);
 
   const categoryLabel = CATEGORY_LABELS[car.category][locale as "en" | "ar"];
 
@@ -23,7 +28,7 @@ export default function CarCard({ car }: ICarCardProps) {
       {/* Image */}
       <div className="relative h-52 overflow-hidden bg-luxury-gray">
         <Image
-          src={car.images[0]}
+          src={car.images[0].url}
           alt={car.name}
           fill
           className="object-cover transition-transform duration-700 group-hover:scale-105"
@@ -50,9 +55,12 @@ export default function CarCard({ car }: ICarCardProps) {
           </div>
           {/* Availability badge */}
           <div>
-            <Badge variant={car.available ? "available" : "unavailable"}>
-              {car.available ? t("available") : t("unavailable")}
-            </Badge>
+            <button
+              onClick={() => setOpenModal(true)}
+              className="btn-gold-outline text-xs tracking-widest uppercase px-5 py-2"
+            >
+              Edit Car
+            </button>
           </div>
         </div>
 
@@ -83,8 +91,28 @@ export default function CarCard({ car }: ICarCardProps) {
               {t("viewDetails")}
             </Button>
           </Link>
+          {onDelete && (
+            <button
+              onClick={onDelete}
+              style={{
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                color: "red",
+              }}
+            >
+              delete
+            </button>
+          )}
         </div>
       </div>
+      <Modal
+        onClose={() => setOpenModal(false)}
+        isOpen={openModal}
+        content={
+          <CarForm onClose={() => setOpenModal(false)} initialData={car} />
+        }
+      />
     </div>
   );
 }

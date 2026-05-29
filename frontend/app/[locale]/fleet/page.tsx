@@ -1,10 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { Car, CarCategory } from "@/types";
 import { getCars, getCarsByCategory } from "@/lib/api";
 import CarCard from "@/components/CarCard";
+import axios from "axios";
+import { useCars } from "@/app/hooks/useCar";
 
 const FILTERS: { key: "all" | CarCategory; labelKey: string }[] = [
   { key: "all", labelKey: "filterAll" },
@@ -20,7 +22,7 @@ export default function FleetPage() {
   const t = useTranslations("fleet");
   const locale = useLocale();
   const isRTL = locale === "ar";
-
+  const { handleDeleteCar } = useCars();
   const [cars, setCars] = useState<Car[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState<"all" | CarCategory>("all");
@@ -40,7 +42,6 @@ export default function FleetPage() {
         const finalData = availableOnly
           ? data.filter((car) => car.available)
           : data;
-        console.log("active filter", activeFilter, finalData);
         setCars(finalData);
         setLoading(false);
       }
@@ -132,7 +133,11 @@ export default function FleetPage() {
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
                 {cars.map((car) => (
-                  <CarCard key={car.id} car={car} />
+                  <CarCard
+                    key={car.id}
+                    car={car}
+                    onDelete={() => handleDeleteCar(car.id)}
+                  />
                 ))}
               </div>
             </>

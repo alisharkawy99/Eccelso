@@ -25,6 +25,7 @@ export default function CarForm({ initialData, onClose }: CarFormProps) {
     specs_power: "",
     specs_seats: "",
   });
+  const [isEdit, setIsEdit] = useState(false);
   const [isLoading, setisLoading] = useState(false);
   const [images, setImages] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -44,6 +45,7 @@ export default function CarForm({ initialData, onClose }: CarFormProps) {
         specs_power: initialData.specs?.power?.toString() || "",
         specs_seats: initialData.specs?.seats?.toString() || "",
       });
+      setIsEdit(true);
     }
   }, [initialData]);
 
@@ -85,9 +87,20 @@ export default function CarForm({ initialData, onClose }: CarFormProps) {
     images.forEach((file) => formDataToSend.append("images", file));
 
     try {
-      await axios.post("http://localhost:8000/cars/", formDataToSend, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      if (isEdit) {
+        await axios.patch(
+          `http://localhost:8000/cars/${initialData?.id}`,
+          formDataToSend,
+          {
+            headers: { "Content-Type": "multipart/form-data" },
+          },
+        );
+      } else {
+        await axios.post("http://localhost:8000/cars/", formDataToSend, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+      }
+
       setisLoading(false);
       onClose?.();
     } catch (error) {
@@ -228,7 +241,7 @@ export default function CarForm({ initialData, onClose }: CarFormProps) {
           setImages((prev) => [...prev, ...Array.from(e.dataTransfer.files)]);
         }}
         onDragOver={(e) => e.preventDefault()}
-        className={`border-2 border-dashed border-luxury-border p-4 h-48 cursor-pointer flex ${images.length > 0 ? "flex-row gap-4 overflow-x-auto" : "items-center justify-center"}`}
+        className={`border-2 border-dashed border-luxury-border p-4 h-36 my-2 cursor-pointer flex ${images.length > 0 ? "flex-row gap-4 overflow-x-auto" : "items-center justify-center"}`}
       >
         {images.length === 0 ? (
           <div className="text-center">

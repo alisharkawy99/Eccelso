@@ -1,15 +1,15 @@
+import json
 from typing import List
 from uuid import UUID
-from fastapi import APIRouter, status, Form, File, UploadFile
+from fastapi import APIRouter, status, Depends, HTTPException
 from services.cars import create_car, get_all_cars, edit_car, remove_car, get_car
 from app.database import SessionDep
-from schemas.cars import CarCreate, CarResponse, EditCar
-import json
+from schemas.cars import CarCreate, CarFormDependency, CarResponse
 
 router = APIRouter(prefix="/cars", tags=["Cars"])
 
 
-@router.get("/", response_model=list[CarResponse])
+@router.get("/", response_model=List[CarResponse])
 def list_cars(
     session: SessionDep, car_category: str | None = None, featured: bool | None = None
 ):
@@ -18,43 +18,51 @@ def list_cars(
 
 @router.get("/{car_id}", response_model=CarResponse)
 def find_car(session: SessionDep, car_id: UUID):
-    return get_car(session, car_id)
+    car = get_car(session, car_id)
+    if not car:
+        raise HTTPException(status_code=404, detail="Car not found")
+    return car
 
 
 @router.post("/", response_model=CarResponse, status_code=status.HTTP_201_CREATED)
 def add_new_car(
-    session: SessionDep,
-    name: str = Form(...),
-    brand: str = Form(...),
-    category: str = Form(...),
-    pricePerDay: int = Form(...),
-    specs: str = Form(...),
-    description: str = Form(...),
-    available: bool = Form(True),
-    featured: bool = Form(True),
-    images: List[UploadFile] = File(...),  # Uploaded files
+    session: SessionDep, data: CarFormDependency = Depends(CarFormDependency)
 ):
-    specs_dict = json.loads(specs)
+    # Safely parse JSON specs
+    specs_dict = json.loads(data.specs) if data.specs else {}
+
     car_data = CarCreate(
-        name=name,
-        brand=brand,
-        category=category,
-        pricePerDay=pricePerDay,
+        name=data.name,
+        brand=data.brand,
+        category=data.category,
+        pricePerDay=data.pricePerDay,
         specs=specs_dict,
-        description=description,
-        available=available,
-        featured=featured,
-        images=[],
+        description=data.description,
+        available=data.available,
+        featured=data.featured,
+        images=[],  # Images are now handled via the Image service/relationship
     )
 
-    return create_car(session, car_data, images)
+    return create_car(session, car_data, data.images)
 
 
-@router.put("/{car_id}", response_model=CarResponse)
-def update_car(session: SessionDep, car_id: UUID, car_data: EditCar):
-    return edit_car(session, car_id, car_data)
+@router.patch("/{car_id}", response_model=CarResponse)
+def update_car(
+    session: SessionDep,
+    car_id: UUID,
+    data: CarFormDependency = Depends(CarFormDependency),
+):
+    existing_car = get_car(session, car_id)
+    if not existing_car:
+        raise HTTPException(status_code=404, detail="Car not found")
+
+    # Pass the data object; the service layer will handle updating the relationship
+    return edit_car(session, car_id, data)
 
 
 @router.delete("/{car_id}")
 def delete_car(session: SessionDep, car_id: UUID):
-    return remove_car(session, car_id)
+    success = remove_car(session, car_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Car not found")
+    return {"message": "Car deleted successfully"}

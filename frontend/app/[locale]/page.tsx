@@ -1,17 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import { useTranslations, useLocale } from "next-intl";
 import { Link } from "@/navigation";
 import { Car } from "@/types";
-import { getFeaturedCars } from "@/lib/api";
+import { getCars, getFeaturedCars } from "@/lib/api";
 import CarCard from "@/components/CarCard";
 import { Button } from "@/components/ui/button";
 import { Shield, Star, Zap } from "lucide-react";
 import { InstagramIcon } from "@/components/ui/instagram-icon";
 import Modal from "@/components/Modal";
 import CarForm from "@/components/CarForm";
+import axios from "axios";
 
 export default function HomePage() {
   const t = useTranslations("home");
@@ -22,7 +23,7 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
   const [openModal, setOpenModal] = useState(false);
   useEffect(() => {
-    getFeaturedCars().then((cars) => {
+    getCars().then((cars) => {
       setFeaturedCars(cars);
       setLoading(false);
     });
@@ -52,7 +53,6 @@ export default function HomePage() {
       desc: t("whyFlexibleDesc"),
     },
   ];
-
   return (
     <>
       {/* ── Hero ─────────────────────────────────────────────────────── */}

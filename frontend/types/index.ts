@@ -6,14 +6,18 @@ export interface CarSpecs {
   seats: number;
   transmission: string;
 }
-
+export interface ICarImages{
+  id:string;
+  url:string;
+  public_id:string
+}
 export interface Car {
   id: string;
   name: string;
   brand: string;
   category: CarCategory;
   pricePerDay: number;
-  images: string[];
+  images: ICarImages[];
   specs: CarSpecs;
   available: boolean;
   featured: boolean;
