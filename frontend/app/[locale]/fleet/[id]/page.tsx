@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import Image from "next/image";
 import { useParams } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
@@ -30,38 +30,75 @@ export default function CarDetailPage() {
 
   const [car, setCar] = useState<Car | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isUploading, setIsUploading] = useState(false);
   const [activeImage, setActiveImage] = useState(0);
+  const [openUpload, setOpenUpload] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [images, setImages] = useState<File[]>([]);
 
-  // 1. Keep handledeleteImage separate from the data fetcher
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files)
+      setImages((prev) => [...prev, ...Array.from(e.target.files!)]);
+  };
+  const removeImage = (index: number) => {
+    setImages((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  // 1. Define the refetcher function once
+  const refreshCarData = useCallback(async () => {
+    if (!params.id) return;
+    setLoading(true);
+    try {
+      console.log("fetching");
+      const data = await getCarById(params.id as string);
+      console.log("fetched");
+      setCar(data);
+    } catch (err) {
+      console.error("Failed to fetch car data:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, [params.id]);
+
+  // 2. Use it in useEffect for initial load
+  useEffect(() => {
+    refreshCarData();
+  }, [refreshCarData]);
+
+  // 3. Use it in your handlers
+  const handleUploadIcons = async () => {
+    setIsUploading(true);
+    try {
+      const formData = new FormData();
+      images.forEach((img) => formData.append("uploaded_images", img));
+
+      await axios.post(`http://localhost:8000/images/${params.id}`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      setImages([]);
+      setOpenUpload(false);
+      // Reuse the refetcher
+      await refreshCarData();
+    } catch (error) {
+      console.error("Upload failed:", error);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   const handleDeleteImage = useCallback(
     async (id: string) => {
       try {
         await axios.delete(`http://localhost:8000/images/${id}`);
-        // Trigger a refetch of the car data after deletion
-        const updatedCar = await getCarById(params.id as string);
-        setCar(updatedCar);
+        // Reuse the refetcher
+        await refreshCarData();
       } catch (error) {
         console.error("Failed to delete image:", error);
       }
     },
-    [params.id],
-  ); // Only re-create if the ID changes
-
-  // 2. useEffect only tracks the ID for the initial load
-  useEffect(() => {
-    if (params.id) {
-      setLoading(true); // Ensure loading is set correctly
-      getCarById(params.id as string)
-        .then((data) => {
-          setCar(data);
-          setLoading(false);
-        })
-        .catch((err) => {
-          console.error(err);
-          setLoading(false);
-        });
-    }
-  }, [params.id]); // Removed handleDeleteImage
+    [refreshCarData],
+  );
 
   if (loading) {
     return (
@@ -83,12 +120,82 @@ export default function CarDetailPage() {
       </div>
     );
   }
-
   const categoryLabel = CATEGORY_LABELS[car.category][locale as "en" | "ar"];
 
+  const uploadImages = () => {
+    return (
+      <div className="flex flex-col gap-3">
+        <div
+          onClick={() => fileInputRef.current?.click()}
+          onDrop={(e) => {
+            e.preventDefault();
+            setImages((prev) => [...prev, ...Array.from(e.dataTransfer.files)]);
+          }}
+          onDragOver={(e) => e.preventDefault()}
+          className={`border-2 border-dashed border-luxury-border p-4 h-36 my-2 cursor-pointer flex ${images.length > 0 ? "flex-row gap-4 overflow-x-auto" : "items-center justify-center"}`}
+        >
+          {images.length === 0 ? (
+            <div className="text-center">
+              <p className="text-xs text-cream/60 uppercase">
+                Drag & Drop Images
+              </p>
+              <p className="text-xs text-cream/30">or click to browse</p>
+            </div>
+          ) : (
+            images.map((file, index) => (
+              <div key={index} className="relative min-w-[100px] h-full">
+                <img
+                  src={URL.createObjectURL(file)}
+                  alt="preview"
+                  className="w-full h-full object-cover border border-luxury-border"
+                />
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    removeImage(index);
+                  }}
+                  className="absolute -top-2 -right-2 bg-black text-gold rounded-full w-5 h-5 flex items-center justify-center"
+                >
+                  ×
+                </button>
+              </div>
+            ))
+          )}
+        </div>
+        <div className="flex flex-row justify-between gap-4">
+          <Button
+            type="button"
+            onClick={() => setOpenUpload(false)}
+            variant="outline"
+            className="w-full rounded-none border-luxury-border text-cream"
+          >
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            variant="gold"
+            className="w-full rounded-none uppercase tracking-widest"
+            onClick={handleUploadIcons}
+            disabled={isUploading}
+          >
+            {isUploading ? "Uploading....." : "Upload Images"}
+          </Button>
+        </div>
+      </div>
+    );
+  };
   return (
     <>
       {/* Back button */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileChange}
+        className="hidden"
+        multiple
+        accept="image/*"
+      />
       <div className="pt-24 pb-4 bg-luxury-black">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <Link
@@ -115,8 +222,7 @@ export default function CarDetailPage() {
               <div className="relative aspect-[16/10] bg-luxury-gray overflow-hidden">
                 <button
                   onClick={() => {
-                    // Add your add logic here (e.g., trigger file input)
-                    console.log("Add button clicked");
+                    setOpenUpload(true);
                   }}
                   className="absolute top-0 right-0 z-50 border border-white rounded-full"
                   title="Add Image"
@@ -175,7 +281,10 @@ export default function CarDetailPage() {
                   className={`flex gap-2${isRTL ? " flex-row-reverse" : ""}`}
                 >
                   {car.images.map((img, i) => (
-                    <div key={img.id} className="relative flex-1 aspect-[4/3]">
+                    <div
+                      key={img.id}
+                      className="group relative flex-1 aspect-[4/3]"
+                    >
                       {/* The Thumbnail Button */}
                       <button
                         onClick={() => setActiveImage(i)}
@@ -194,13 +303,12 @@ export default function CarDetailPage() {
                         />
                       </button>
 
-                      {/* The Trash Button */}
                       <button
                         onClick={(e) => {
                           e.stopPropagation(); // Prevents triggering the thumbnail click
                           handleDeleteImage(img.id); // Call your delete function
                         }}
-                        className="absolute top-1 right-1 bg-black/50 p-1 rounded-full hover:bg-red-600 transition-colors"
+                        className="absolute transition-opacity opacity-0 top-1 right-1 bg-black/50 p-1 rounded-full hover:bg-red-600 group-hover:opacity-100"
                         title="Delete Image"
                       >
                         <Trash2 className="w-4 h-4 text-white" />
@@ -305,7 +413,11 @@ export default function CarDetailPage() {
           </div>
         </div>
       </section>
-      <Modal isOpen={} onClose={} content={} />
+      <Modal
+        isOpen={openUpload}
+        onClose={() => setOpenUpload(false)}
+        content={uploadImages()}
+      />
     </>
   );
 }
