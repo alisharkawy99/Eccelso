@@ -7,6 +7,9 @@ import { getCars, getCarsByCategory } from "@/lib/api";
 import CarCard from "@/components/CarCard";
 import axios from "axios";
 import { useCars } from "@/app/hooks/useCar";
+import CarForm from "@/components/CarForm";
+import Modal from "@/components/Modal";
+import { Button } from "@headlessui/react";
 
 const FILTERS: { key: "all" | CarCategory; labelKey: string }[] = [
   { key: "all", labelKey: "filterAll" },
@@ -22,12 +25,13 @@ export default function FleetPage() {
   const t = useTranslations("fleet");
   const locale = useLocale();
   const isRTL = locale === "ar";
-  const { handleDeleteCar } = useCars();
+  const { handleDeleteCar, isDeleting } = useCars();
   const [cars, setCars] = useState<Car[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState<"all" | CarCategory>("all");
   const [availableOnly, setAvailableOnly] = useState(false);
-
+  const [openModal, setOpenModal] = useState(false);
+  const [addingCar, setAddingCar] = useState(false);
   useEffect(() => {
     let isMounted = true;
     setLoading(true);
@@ -51,7 +55,7 @@ export default function FleetPage() {
       isMounted = false;
     };
     // We include availableOnly in the dependency array so it refreshes the view when toggled
-  }, [activeFilter, availableOnly]);
+  }, [activeFilter, availableOnly, addingCar, isDeleting]);
 
   // Now, 'cars' is already filtered from the backend, so we just map 'cars'
   return (
@@ -105,6 +109,12 @@ export default function FleetPage() {
                 {locale === "ar" ? "المتاحة فقط" : "Available Only"}
               </span>
             </label>
+            <Button
+              className="ms-auto btn-gold-outline text-xs tracking-widest uppercase px-5 py-2"
+              onClick={() => setOpenModal(true)}
+            >
+              Add Car
+            </Button>
           </div>
         </div>
       </section>
@@ -137,12 +147,24 @@ export default function FleetPage() {
                     key={car.id}
                     car={car}
                     onDelete={() => handleDeleteCar(car.id)}
+                    isDeleting={isDeleting}
                   />
                 ))}
               </div>
             </>
           )}
         </div>
+        <Modal
+          isOpen={openModal}
+          onClose={() => setOpenModal(false)}
+          content={
+            <CarForm
+              onClose={() => setOpenModal(false)}
+              isLoading={addingCar}
+              setisLoading={setAddingCar}
+            />
+          }
+        />
       </section>
     </>
   );

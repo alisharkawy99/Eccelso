@@ -11,11 +11,13 @@ export default function Modal({
   onClose,
   content,
   isEdit,
+  title,
 }: {
   isOpen: boolean;
   isEdit?: boolean;
   content?: React.ReactNode;
   onClose: () => void;
+  title?: string;
 }) {
   return (
     <Dialog open={isOpen} onClose={onClose} className="relative z-50">
@@ -35,7 +37,9 @@ export default function Modal({
         >
           <DialogTitle className="text-gold text-xl font-playfair">
             <div className="flex flex-row justify-between">
-              <h1>{isEdit ? "Edit Car " : "Add a new Car"}</h1>
+              <h1 className={title ? "text-gray-50 text-base font-inter" : ""}>
+                {title ? title : isEdit ? "Edit Car" : ""}
+              </h1>
               <Button onClick={onClose}>
                 <X className="w-5 h-5" />
               </Button>

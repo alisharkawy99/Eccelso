@@ -1,6 +1,12 @@
 fastapi
 uvicorn
 sqlalchemy
+asyncpg
+greenlet
 psycopg2-binary
 python-dotenv
 pydantic-settings
+cloudinary
+python-jose
+argon2-cffi
+email-validator

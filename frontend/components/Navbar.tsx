@@ -5,7 +5,12 @@ import { useTranslations, useLocale } from "next-intl";
 import { usePathname, useRouter } from "@/navigation";
 import { Link } from "@/navigation";
 import { Menu, X, ChevronDown } from "lucide-react";
-
+import { Button } from "./ui/button";
+import Modal from "./Modal";
+import { Content } from "next/font/google";
+import UserAuthForm from "./UserForm";
+import Cookies from "js-cookie";
+import UserProfileMenu from "./UserProfileMenu";
 export default function Navbar() {
   const t = useTranslations("nav");
   const locale = useLocale();
@@ -16,6 +21,9 @@ export default function Navbar() {
   const [langOpen, setLangOpen] = useState(false);
   const isRTL = locale === "ar";
 
+  const [openUserModal, setOpenUserModal] = useState(false);
+  const token = Cookies.get("authToken");
+  const [userName, setUserName] = useState("");
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
     window.addEventListener("scroll", handleScroll);
@@ -25,7 +33,11 @@ export default function Navbar() {
   useEffect(() => {
     setMobileOpen(false);
   }, [pathname]);
-
+  useEffect(() => {
+    const userString = sessionStorage.getItem("user");
+    const user = userString ? JSON.parse(userString) : null;
+    setUserName(user.name);
+  }, [openUserModal]);
   const navLinks = [
     { href: "/", label: t("home") },
     { href: "/fleet", label: t("fleet") },
@@ -79,40 +91,17 @@ export default function Navbar() {
         >
           <Link
             href="/booking"
-            className="btn-gold-outline text-xs tracking-widest uppercase px-5 py-2"
+            className="btn-gold-outline text-xs tracking-widest uppercase px-5 py-[9px]"
           >
             {t("booking")}
           </Link>
-
-          <div className="relative flex flex-row gap-3 items-center justify-center">
-            <button
-              onClick={() => setLangOpen(!langOpen)}
-              className="flex items-center gap-1 text-xs tracking-widest text-cream/60 hover:text-gold transition-colors uppercase"
-            >
-              {locale === "en" ? "EN" : "عربي"}
-              <ChevronDown
-                className={`w-3 h-3 transition-transform${langOpen ? " rotate-180" : ""}`}
-              />
-            </button>
-
-            {langOpen && (
-              <div className="absolute top-full mt-2 right-0 bg-luxury-dark border border-luxury-border w-24 py-1 z-50">
-                {["en", "ar"].map((l) => (
-                  <button
-                    key={l}
-                    onClick={() => switchLocale(l)}
-                    className={`w-full text-left px-4 py-2 text-xs tracking-wider uppercase transition-colors ${
-                      locale === l
-                        ? "text-gold"
-                        : "text-cream/60 hover:text-gold"
-                    }`}
-                  >
-                    {l === "en" ? "English" : "عربي"}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+          {token ? (
+            <UserProfileMenu userName={userName} />
+          ) : (
+            <Button size="md" onClick={() => setOpenUserModal(true)}>
+              Sign in
+            </Button>
+          )}
         </div>
 
         <button
@@ -165,6 +154,11 @@ export default function Navbar() {
           </div>
         </div>
       )}
+      <Modal
+        isOpen={openUserModal}
+        onClose={() => setOpenUserModal(false)}
+        content={<UserAuthForm onClose={() => setOpenUserModal(false)} />}
+      />
     </header>
   );
 }

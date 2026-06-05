@@ -21,7 +21,6 @@ export default function HomePage() {
 
   const [featuredCars, setFeaturedCars] = useState<Car[]>([]);
   const [loading, setLoading] = useState(true);
-  const [openModal, setOpenModal] = useState(false);
   useEffect(() => {
     getCars().then((cars) => {
       setFeaturedCars(cars);
@@ -100,7 +99,6 @@ export default function HomePage() {
                 {t("heroCTA2")}
               </Button>
             </Link>
-            <Button onClick={() => setOpenModal(true)}>openModal</Button>
           </div>
         </div>
 
@@ -227,11 +225,6 @@ export default function HomePage() {
           </a>
         </div>
       </section>
-      <Modal
-        isOpen={openModal}
-        onClose={() => setOpenModal(false)}
-        content={<CarForm onClose={() => setOpenModal(false)} />}
-      />
     </>
   );
 }

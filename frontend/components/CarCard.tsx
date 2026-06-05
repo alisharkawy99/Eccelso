@@ -7,28 +7,63 @@ import { Car } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CATEGORY_LABELS } from "@/types";
-import { useState } from "react";
+import { SetStateAction, Dispatch, useState } from "react";
 import Modal from "./Modal";
 import CarForm from "./CarForm";
-import axios from "axios";
+import { Trash2 } from "lucide-react";
 interface ICarCardProps {
   car: Car;
   onDelete?: () => Promise<void>;
+  isDeleting?: boolean;
 }
 
-export default function CarCard({ car, onDelete }: ICarCardProps) {
+export default function CarCard({ car, onDelete, isDeleting }: ICarCardProps) {
   const t = useTranslations("fleet");
   const locale = useLocale();
   const [openModal, setOpenModal] = useState(false);
-
+  const [deleteCar, setDeleteCar] = useState(false);
   const categoryLabel = CATEGORY_LABELS[car.category][locale as "en" | "ar"];
-
+  const deleteConfirmation = () => {
+    return (
+      <div className="flex flex-row gap-3">
+        <Button
+          type="button"
+          onClick={() => {
+            setDeleteCar(false);
+          }}
+          variant="outline"
+          size="sm"
+          className="w-full border-luxury-border text-cream !rounded-lg"
+        >
+          Cancel
+        </Button>
+        <Button
+          type="submit"
+          variant="gold"
+          size="sm"
+          className="w-full uppercase tracking-widest !rounded-lg"
+          onClick={() => {
+            onDelete?.();
+            setDeleteCar(false);
+          }}
+        >
+          {isDeleting ? "Deleting car..." : "Delete"}
+        </Button>
+      </div>
+    );
+  };
   return (
     <div className="card-glass group overflow-hidden flex flex-col">
       {/* Image */}
+      <Modal
+        isOpen={deleteCar}
+        onClose={() => setDeleteCar(false)}
+        content={deleteConfirmation()}
+        title={`Are you Sure u want to delete ${car.name}`}
+      />
       <div className="relative h-52 overflow-hidden bg-luxury-gray">
         <Image
-          src={car.images[0].url}
+          src={car.images?.[0]?.url ?? ""}
           alt={car.name}
           fill
           className="object-cover transition-transform duration-700 group-hover:scale-105"
@@ -93,15 +128,13 @@ export default function CarCard({ car, onDelete }: ICarCardProps) {
           </Link>
           {onDelete && (
             <button
-              onClick={onDelete}
-              style={{
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                color: "red",
-              }}
+              className="text-[#c9a84c] transition-all duration-300 
+         hover:bg-[#c9a84c]/15 hover:-translate-y-1 
+         hover:shadow-[0_0_15px_rgba(201,168,76,0.6),0_0_30px_rgba(201,168,76,0.3)]
+         hover:drop-shadow-[0_0_5px_rgba(201,168,76,0.5)]"
+              onClick={() => setDeleteCar(true)}
             >
-              delete
+              <Trash2 />
             </button>
           )}
         </div>

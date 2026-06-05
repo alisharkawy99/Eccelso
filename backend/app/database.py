@@ -1,19 +1,22 @@
 from app.config import settings
-from sqlalchemy import create_engine
-from sqlalchemy.orm import Session, declarative_base
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
+from sqlalchemy.orm import declarative_base
 from typing import Annotated
 from fastapi import Depends
 
 Base = declarative_base()
-engine = create_engine(settings.database_url)
+
+async_engine = create_async_engine(
+    settings.database_url.replace("postgresql://", "postgresql+asyncpg://")
+)
 
 
-def get_db():
-    db = Session(engine)
-    try:
-        yield db
-    finally:
-        db.close()
+async def get_db():
+    async with async_sessionmaker(async_engine, expire_on_commit=False)() as db:
+        try:
+            yield db
+        finally:
+            await db.close()
 
 
-SessionDep = Annotated[Session, Depends(get_db)]
+SessionDep = Annotated[AsyncSession, Depends(get_db)]

@@ -1,28 +1,27 @@
-from sqlalchemy.orm import Session
+import asyncio
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 from models.images import Image
 import cloudinary.uploader
 
 
-def add_image_to_car(session: Session, car_id: str, file):
-    # 1. Upload to Cloudinary
-    result = cloudinary.uploader.upload(file.file)
+async def add_image_to_car(session: AsyncSession, car_id: str, file):
+    result = await asyncio.to_thread(cloudinary.uploader.upload, file.file)
 
-    # 2. Save to Database
     new_image = Image(
         url=result["secure_url"], public_id=result["public_id"], car_id=car_id
     )
     session.add(new_image)
-    session.commit()
-    session.refresh(new_image)
+    await session.commit()
+    await session.refresh(new_image)
     return new_image
 
 
-def delete_image(session: Session, image_id: str):
-    image = session.query(Image).filter(Image.id == image_id).first()
+async def delete_image(session: AsyncSession, image_id: str):
+    result = await session.execute(select(Image).where(Image.id == image_id))
+    image = result.scalar_one_or_none()
     if image:
-        # 1. Remove from Cloudinary
-        cloudinary.uploader.destroy(image.public_id)
-        # 2. Remove from DB
-        session.delete(image)
-        session.commit()
+        await asyncio.to_thread(cloudinary.uploader.destroy, image.public_id)
+        await session.delete(image)
+        await session.commit()
     return image

@@ -1,6 +1,13 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+  Dispatch,
+  SetStateAction,
+} from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Car } from "@/types";
@@ -9,9 +16,16 @@ import axios from "axios";
 interface CarFormProps {
   initialData?: Car;
   onClose: () => void;
+  isLoading?: boolean;
+  setisLoading?: Dispatch<SetStateAction<boolean>>;
 }
 
-export default function CarForm({ initialData, onClose }: CarFormProps) {
+export default function CarForm({
+  initialData,
+  onClose,
+  setisLoading,
+  isLoading,
+}: CarFormProps) {
   const [formData, setFormData] = useState({
     name: "",
     brand: "",
@@ -26,7 +40,6 @@ export default function CarForm({ initialData, onClose }: CarFormProps) {
     specs_seats: "",
   });
   const [isEdit, setIsEdit] = useState(false);
-  const [isLoading, setisLoading] = useState(false);
   const [images, setImages] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -63,7 +76,7 @@ export default function CarForm({ initialData, onClose }: CarFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setisLoading(true);
+    setisLoading?.(true);
     const formDataToSend = new FormData();
 
     formDataToSend.append("name", formData.name);
@@ -85,7 +98,6 @@ export default function CarForm({ initialData, onClose }: CarFormProps) {
     );
 
     images.forEach((file) => formDataToSend.append("images", file));
-
     try {
       if (isEdit) {
         await axios.patch(
@@ -101,7 +113,7 @@ export default function CarForm({ initialData, onClose }: CarFormProps) {
         });
       }
 
-      setisLoading(false);
+      setisLoading?.(false);
       onClose?.();
     } catch (error) {
       console.error("Submission error:", error);
@@ -126,6 +138,7 @@ export default function CarForm({ initialData, onClose }: CarFormProps) {
         className="hidden"
         multiple
         accept="image/*"
+        required
       />
 
       {/* Basic Info */}
@@ -291,7 +304,7 @@ export default function CarForm({ initialData, onClose }: CarFormProps) {
           {initialData
             ? "Update Vehicle"
             : isLoading
-              ? "Loading..."
+              ? "Adding Vehicle..."
               : "Submit Listing"}
         </Button>
       </div>
