@@ -1,5 +1,6 @@
 from enum import Enum
 from typing import Optional, List
+from datetime import datetime
 from schemas.images import ImageResponse
 from pydantic import BaseModel, ConfigDict, Field
 from uuid import UUID
@@ -26,11 +27,14 @@ class CarResponse(BaseModel):
     name: str
     brand: str
     category: str
+    condition: str = "new"
     images: List[ImageResponse]
     specs: CarSpecs
     available: bool
     featured: bool
-    description: str
+    sold: bool = False
+    sold_at: Optional[datetime] = None
+    description: Optional[str] = ""
 
 
 class CarCreate(BaseModel):
@@ -38,11 +42,12 @@ class CarCreate(BaseModel):
     name: str
     brand: str
     category: str
+    condition: str = "new"
     images: list[ImageResponse]
     specs: CarSpecs
     available: bool = True
     featured: bool = True
-    description: str
+    description: str = ""
 
 
 class EditCar(BaseModel):
@@ -51,6 +56,7 @@ class EditCar(BaseModel):
     name: Optional[str] = None
     brand: Optional[str] = None
     category: Optional[str] = None
+    condition: Optional[str] = None
     images: Optional[List[ImageResponse]] = None
     specs: Optional[CarSpecs] = None
     available: Optional[bool] = None
@@ -64,6 +70,7 @@ class CarFormDependency:
         name: str = Form(None),
         brand: str = Form(None),
         category: str = Form(None),
+        condition: str = Form("new"),
         specs: str = Form(None),
         description: str = Form(None),
         available: bool = Form(True),
@@ -73,6 +80,7 @@ class CarFormDependency:
         self.name = name
         self.brand = brand
         self.category = category
+        self.condition = condition
         self.specs = specs
         self.description = description
         self.available = available

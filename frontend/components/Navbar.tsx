@@ -10,6 +10,8 @@ import Modal from "./Modal";
 import UserAuthForm from "./UserForm";
 import Cookies from "js-cookie";
 import UserProfileMenu from "./UserProfileMenu";
+import { useAuth } from "@/app/hooks/useAuth";
+import { Calendar, Crown } from "lucide-react";
 
 interface StoredUser {
   name: string;
@@ -28,6 +30,7 @@ export default function Navbar() {
   const [openUserModal, setOpenUserModal] = useState(false);
   const token = Cookies.get("authToken");
   const [user, setUser] = useState<StoredUser | null>(null);
+  const { isAdmin, authReady } = useAuth();
   const isRTL = locale === "ar";
 
   useEffect(() => {
@@ -102,14 +105,43 @@ export default function Navbar() {
         </div>
 
         <div
-          className={`hidden md:flex items-center gap-4${isRTL ? " flex-row-reverse" : ""}`}
+          className={`hidden md:flex items-center gap-3${isRTL ? " flex-row-reverse" : ""}`}
         >
-          <Link
-            href="/booking"
-            className="btn-gold-outline text-xs tracking-widest uppercase px-5 py-[9px]"
-          >
-            {t("booking")}
-          </Link>
+          {token && user && authReady ? (
+            <>
+              <Link
+                href="/my-bookings"
+                className={`inline-flex items-center gap-1.5 text-xs tracking-widest uppercase px-4 py-2 rounded-xl border transition-all duration-300 ${
+                  pathname === "/my-bookings"
+                    ? "border-gold/50 bg-gold/10 text-gold"
+                    : "border-luxury-border/40 text-cream/70 hover:border-gold/40 hover:text-gold"
+                }`}
+              >
+                <Calendar className="h-3.5 w-3.5" />
+                {locale === "ar" ? "حجوزاتي" : "My Bookings"}
+              </Link>
+              {isAdmin && (
+                <Link
+                  href="/admin/bookings"
+                  className={`inline-flex items-center gap-1.5 text-xs tracking-widest uppercase px-4 py-2 rounded-xl border transition-all duration-300 ${
+                    pathname === "/admin/bookings"
+                      ? "border-gold/50 bg-gold/10 text-gold"
+                      : "border-luxury-border/40 text-cream/70 hover:border-gold/40 hover:text-gold"
+                  }`}
+                >
+                  <Crown className="h-3.5 w-3.5" />
+                  {locale === "ar" ? "لوحة الإدارة" : "Admin"}
+                </Link>
+              )}
+            </>
+          ) : (
+            <Link
+              href="/booking"
+              className="btn-gold-outline text-xs tracking-widest uppercase px-5 py-[9px]"
+            >
+              {t("booking")}
+            </Link>
+          )}
           {token && user ? (
             <UserProfileMenu
               userName={user.name}
@@ -164,12 +196,43 @@ export default function Navbar() {
               </Link>
             ))}
 
-            <Link
-              href="/booking"
-              className="btn-gold text-center text-xs tracking-widest uppercase py-3 mt-2"
-            >
-              {t("booking")}
-            </Link>
+            {token && user && authReady && (
+              <div className="flex flex-col gap-2">
+                <Link
+                  href="/my-bookings"
+                  className={`inline-flex items-center justify-center gap-2 text-xs tracking-widest uppercase py-3 rounded-xl border transition-colors ${
+                    pathname === "/my-bookings"
+                      ? "border-gold/50 bg-gold/10 text-gold"
+                      : "border-luxury-border/40 text-cream/70"
+                  }`}
+                >
+                  <Calendar className="h-4 w-4" />
+                  {locale === "ar" ? "حجوزاتي" : "My Bookings"}
+                </Link>
+                {isAdmin && (
+                  <Link
+                    href="/admin/bookings"
+                    className={`inline-flex items-center justify-center gap-2 text-xs tracking-widest uppercase py-3 rounded-xl border transition-colors ${
+                      pathname === "/admin/bookings"
+                        ? "border-gold/50 bg-gold/10 text-gold"
+                        : "border-luxury-border/40 text-cream/70"
+                    }`}
+                  >
+                    <Crown className="h-4 w-4" />
+                    {locale === "ar" ? "لوحة الإدارة" : "Admin Dashboard"}
+                  </Link>
+                )}
+              </div>
+            )}
+
+            {!token && (
+              <Link
+                href="/booking"
+                className="btn-gold text-center text-xs tracking-widest uppercase py-3 mt-2"
+              >
+                {t("booking")}
+              </Link>
+            )}
 
             {token && user ? (
               <UserProfileMenu

@@ -52,7 +52,7 @@ export default function FleetPage() {
       if (isMounted) {
         // Apply the "available only" filter locally (or move to backend if preferred)
         const finalData = availableOnly
-          ? data.filter((car) => car.available)
+          ? data.filter((car) => !car.sold)
           : data;
         setCars(finalData);
         setLoading(false);

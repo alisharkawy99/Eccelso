@@ -61,22 +61,15 @@
   },
   "booking": {
     "title": "Reserve Your Car",
-    "subtitle": "Complete the form and we'll confirm your booking",
+    "subtitle": "Sign in and complete the form to reserve a vehicle for purchase",
     "selectCar": "Select a Car",
-    "pickupDate": "Pickup Date",
-    "returnDate": "Return Date",
-    "fullName": "Full Name",
-    "phone": "Phone Number",
     "notes": "Additional Notes",
     "notesPlaceholder": "Any special requests or notes...",
-    "submit": "Send Booking Request",
+    "submit": "Confirm Booking",
     "successTitle": "Booking Request Sent!",
-    "successDesc": "We'll contact you within 2 hours to confirm your reservation.",
+    "successDesc": "Your booking request has been submitted and is pending admin approval.",
     "summaryTitle": "Booking Summary",
-    "totalDays": "Total Days",
-    "totalPrice": "Estimated Total",
-    "selectCarFirst": "Select a car to see summary",
-    "egp": "EGP"
+    "selectCarFirst": "Select a car to see summary"
   },
   "about": {
     "title": "About Eccelso",

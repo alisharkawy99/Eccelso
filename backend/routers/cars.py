@@ -2,7 +2,7 @@ import json
 from typing import Annotated, List
 from uuid import UUID
 from fastapi import APIRouter, status, Depends, HTTPException, UploadFile, File
-from services.cars import create_car, list_cars, update_car, delete_car, get_car
+from services.cars import create_car, list_cars, update_car, delete_car, get_car, mark_car_sold
 from services.images import create_car_image
 from app.database import SessionDep
 from app.dependencies.auth import AdminDep
@@ -35,8 +35,9 @@ async def create_car_endpoint(
         name=data.name,
         brand=data.brand,
         category=data.category,
+        condition=data.condition or "new",
         specs=specs_dict,
-        description=data.description,
+        description=data.description or "",
         available=data.available,
         featured=data.featured,
         images=[],
@@ -60,6 +61,13 @@ async def update_car_endpoint(
 async def delete_car_endpoint(session: SessionDep, car_id: UUID, _admin: AdminDep):
     await delete_car(session, car_id)
     return {"message": "Car deleted successfully"}
+
+
+@router.patch("/{car_id}/sold", response_model=CarResponse)
+async def mark_car_sold_endpoint(
+    session: SessionDep, car_id: UUID, _admin: AdminDep
+):
+    return await mark_car_sold(session, car_id)
 
 
 @router.post("/{car_id}/images")

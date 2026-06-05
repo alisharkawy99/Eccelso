@@ -1,6 +1,7 @@
 import json
 import asyncio
 import cloudinary.uploader
+from datetime import datetime, timezone
 from uuid import UUID
 from typing import List
 from fastapi import HTTPException, status, UploadFile
@@ -10,12 +11,16 @@ from sqlalchemy.orm import selectinload
 from models.cars import Car
 from models.images import Image
 from schemas.cars import CarCreate, CarFormDependency
+from services.bookings import _public_car_filter, purge_expired_sold_cars
 
 
 async def list_cars(
     db: AsyncSession, category: str | None = None, featured: bool | None = None
 ) -> list[Car]:
+    await purge_expired_sold_cars(db)
+
     query = select(Car).options(selectinload(Car.images))
+    query = _public_car_filter(query)
     if category:
         query = query.where(Car.category == category)
     if featured:
@@ -106,12 +111,40 @@ async def delete_car(db: AsyncSession, car_id: UUID):
 
 
 async def get_car(db: AsyncSession, car_id: UUID):
-    result = await db.execute(
-        select(Car).options(selectinload(Car.images)).where(Car.id == car_id)
+    await purge_expired_sold_cars(db)
+
+    query = (
+        select(Car)
+        .options(selectinload(Car.images))
+        .where(Car.id == car_id)
     )
+    query = _public_car_filter(query)
+    result = await db.execute(query)
     car_instance = result.scalar_one_or_none()
     if not car_instance:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Car not found"
         )
     return car_instance
+
+
+async def mark_car_sold(db: AsyncSession, car_id: UUID) -> Car:
+    result = await db.execute(
+        select(Car).options(selectinload(Car.images)).where(Car.id == car_id)
+    )
+    car = result.scalar_one_or_none()
+    if not car:
+        raise HTTPException(status_code=404, detail="Car not found")
+
+    if car.sold:
+        raise HTTPException(status_code=400, detail="Car is already marked as sold")
+
+    car.sold = True
+    car.sold_at = datetime.now(timezone.utc)
+    car.available = False
+
+    await db.commit()
+    result = await db.execute(
+        select(Car).options(selectinload(Car.images)).where(Car.id == car_id)
+    )
+    return result.scalar_one()

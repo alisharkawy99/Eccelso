@@ -27,9 +27,11 @@ function readStoredUser(): AuthUser | null {
 
 export function useAuth() {
   const [user, setUser] = useState<AuthUser | null>(null);
+  const [authReady, setAuthReady] = useState(false);
 
   const refresh = useCallback(() => {
     setUser(readStoredUser());
+    setAuthReady(true);
   }, []);
 
   useEffect(() => {
@@ -42,7 +44,7 @@ export function useAuth() {
 
   const isAdmin = user?.role === "Admin";
 
-  return { user, isAdmin, isAuthenticated: !!user };
+  return { user, isAdmin, isAuthenticated: !!user, authReady };
 }
 
 export function notifyAuthChange() {

@@ -1,4 +1,6 @@
 export type CarCategory = 'supercar' | 'luxury_sedan' | 'sport' | 'premium_suv' | 'sports';
+export type CarCondition = 'new' | 'used';
+export type BookingStatus = 'pending' | 'approved' | 'rejected' | 'cancelled';
 
 export interface CarSpecs {
   engine: string;
@@ -16,19 +18,52 @@ export interface Car {
   name: string;
   brand: string;
   category: CarCategory;
+  condition?: CarCondition;
   images: ICarImages[];
   specs: CarSpecs;
   available: boolean;
   featured: boolean;
+  sold?: boolean;
+  sold_at?: string | null;
   description?: string;
 }
 
-export interface BookingInquiry {
-  carId: string;
-  startDate: string;
-  endDate: string;
-  customerName: string;
-  phone: string;
+export interface Booking {
+  id: string;
+  user_id: string;
+  car_id: string | null;
+  status: BookingStatus;
+  notes?: string | null;
+  car_name: string;
+  car_brand: string;
+  car_image_url?: string | null;
+  car_condition: CarCondition;
+  created_at: string;
+  updated_at?: string | null;
+  cancelled_at?: string | null;
+  car?: Car | null;
+}
+
+export interface BookingWithUser extends Booking {
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+    avatar_url?: string | null;
+  };
+}
+
+export interface AdminBookingStats {
+  total_bookings: number;
+  pending_bookings: number;
+  approved_bookings: number;
+  rejected_bookings: number;
+  cancelled_bookings: number;
+}
+
+export interface BookingCreate {
+  car_id: string;
   notes?: string;
 }
 

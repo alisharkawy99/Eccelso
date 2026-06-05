@@ -263,18 +263,28 @@ export default function AdminPage() {
                       </td>
                       {/* Category */}
                       <td className="py-3 px-3">
-                        <Badge variant="gold" className="text-[10px]">
+                        <Badge variant="category" size="sm">
                           {CATEGORY_LABELS[car.category][locale as 'en' | 'ar']}
                         </Badge>
                       </td>
                       {/* Status */}
                       <td className="py-3 px-3">
-                        <div className="flex flex-col gap-1">
-                          <Badge variant={car.available ? 'available' : 'unavailable'} className="text-[10px]">
-                            {car.available ? t('available') : 'Off'}
+                        <div className="flex flex-col gap-1.5">
+                          <Badge
+                            variant={car.sold ? 'sold' : car.available ? 'available' : 'dark'}
+                            size="sm"
+                            dot={!car.sold && car.available}
+                          >
+                            {car.sold
+                              ? locale === 'ar' ? 'مباعة' : 'Sold'
+                              : car.available
+                                ? t('available')
+                                : 'Off'}
                           </Badge>
                           {car.featured && (
-                            <Badge variant="gold" className="text-[10px]">★</Badge>
+                            <Badge variant="featured" size="sm">
+                              ★ Featured
+                            </Badge>
                           )}
                         </div>
                       </td>

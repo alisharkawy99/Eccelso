@@ -6,7 +6,7 @@ import { useParams } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import { Link } from "@/navigation";
 import { Car } from "@/types";
-import { getCarById } from "@/lib/api";
+import { getCarById, adminMarkCarSold } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CATEGORY_LABELS } from "@/types";
@@ -51,6 +51,7 @@ export default function CarDetailPage() {
   const [deleteImageId, setDeleteImageId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const thumbStripRef = useRef<HTMLDivElement>(null);
+  const [markingSold, setMarkingSold] = useState(false);
   const [images, setImages] = useState<File[]>([]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -483,12 +484,23 @@ export default function CarDetailPage() {
               <div
                 className={`flex flex-wrap items-center gap-2${isRTL ? " flex-row-reverse" : ""}`}
               >
-                <Badge variant="gold">{categoryLabel}</Badge>
-                <Badge variant={car.available ? "available" : "unavailable"}>
-                  {car.available ? t("available") : t("unavailable")}
+                <Badge variant="category">{categoryLabel}</Badge>
+                <Badge variant="condition">
+                  {car.condition === "new"
+                    ? locale === "ar" ? "جديدة" : "New"
+                    : locale === "ar" ? "مستعملة" : "Used"}
                 </Badge>
+                {car.sold ? (
+                  <Badge variant="sold">
+                    {locale === "ar" ? "مباعة" : "Sold"}
+                  </Badge>
+                ) : (
+                  <Badge variant="available" dot>
+                    {t("available")}
+                  </Badge>
+                )}
                 {car.featured && (
-                  <Badge variant="gold" className="gap-1">
+                  <Badge variant="featured">
                     <Sparkles className="h-3 w-3" />
                     {locale === "ar" ? "مميزة" : "Featured"}
                   </Badge>
@@ -547,11 +559,39 @@ export default function CarDetailPage() {
                     variant="gold"
                     size="lg"
                     className="w-full"
-                    disabled={!car.available}
+                    disabled={car.sold}
                   >
                     {t("bookNow")}
                   </Button>
                 </Link>
+                {isAdmin && !car.sold && (
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className="flex-1 border-red-500/30 text-red-400 hover:bg-red-500/10"
+                    disabled={markingSold}
+                    onClick={async () => {
+                      if (
+                        !window.confirm(
+                          locale === "ar"
+                            ? "تأكيد وضع علامة مباعة على هذه السيارة؟"
+                            : "Mark this vehicle as sold?",
+                        )
+                      )
+                        return;
+                      setMarkingSold(true);
+                      await adminMarkCarSold(car.id);
+                      await refreshCarData();
+                      setMarkingSold(false);
+                    }}
+                  >
+                    {markingSold
+                      ? "..."
+                      : locale === "ar"
+                        ? "وضع علامة مباعة"
+                        : "Mark as Sold"}
+                  </Button>
+                )}
                 <a
                   href="https://wa.me/201000000000"
                   target="_blank"

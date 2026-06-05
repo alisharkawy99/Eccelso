@@ -73,6 +73,7 @@ export default function CarForm({
     name: "",
     brand: "",
     category: "supercar",
+    condition: "new",
     available: true,
     featured: false,
     description: "",
@@ -94,6 +95,7 @@ export default function CarForm({
         name: initialData.name,
         brand: initialData.brand,
         category: initialData.category,
+        condition: initialData.condition || "new",
         available: initialData.available,
         featured: initialData.featured,
         description: initialData.description || "",
@@ -159,6 +161,7 @@ export default function CarForm({
     formDataToSend.append("name", formData.name);
     formDataToSend.append("brand", formData.brand);
     formDataToSend.append("category", formData.category);
+    formDataToSend.append("condition", formData.condition);
     formDataToSend.append("description", formData.description);
     formDataToSend.append("available", formData.available.toString());
     formDataToSend.append("featured", formData.featured.toString());
@@ -264,6 +267,17 @@ export default function CarForm({
               <option value="luxury_sedan">Luxury Sedan</option>
               <option value="sports">Sports</option>
               <option value="premium_suv">Premium SUV</option>
+            </select>
+          </FormField>
+          <FormField label="Condition" required>
+            <select
+              name="condition"
+              value={formData.condition}
+              onChange={handleChange}
+              className={selectClass()}
+            >
+              <option value="new">New</option>
+              <option value="used">Used</option>
             </select>
           </FormField>
         </div>

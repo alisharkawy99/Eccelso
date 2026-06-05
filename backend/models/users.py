@@ -5,6 +5,7 @@ from app.database import Base
 
 # Change this import
 from sqlalchemy import Column, String, Boolean, Enum as SQLAlchemyEnum, DateTime, UUID
+from sqlalchemy.orm import relationship
 
 
 class RoleEnum(str, enum.Enum):
@@ -25,3 +26,4 @@ class Users(Base):
     address = Column(String, nullable=True)
     avatar_url = Column(String, nullable=True)
     avatar_public_id = Column(String, nullable=True)
+    bookings = relationship("Booking", back_populates="user")

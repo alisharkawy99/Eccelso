@@ -92,7 +92,7 @@ export default function UserProfileMenu({
     {
       key: "bookings",
       label: "My Bookings",
-      href: "/booking",
+      href: "/my-bookings",
       icon: Calendar,
     },
     {
@@ -106,7 +106,7 @@ export default function UserProfileMenu({
           {
             key: "admin",
             label: "Admin Dashboard",
-            href: "/admin",
+            href: "/admin/bookings",
             icon: Crown,
           },
         ]

@@ -5,6 +5,7 @@ import { useTranslations, useLocale } from "next-intl";
 import { Link } from "@/navigation";
 import { Car } from "@/types";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { CATEGORY_LABELS } from "@/types";
 import { useState } from "react";
 import Modal from "./Modal";
@@ -14,6 +15,7 @@ import {
   Pencil,
   Settings2,
   Sparkles,
+  Tag,
   Trash2,
   Users,
   Zap,
@@ -37,6 +39,11 @@ export default function CarCard({
   const [openModal, setOpenModal] = useState(false);
   const [deleteCar, setDeleteCar] = useState(false);
   const categoryLabel = CATEGORY_LABELS[car.category][locale as "en" | "ar"];
+  const conditionLabel =
+    (car.condition || "new") === "new"
+      ? locale === "ar" ? "جديدة" : "New"
+      : locale === "ar" ? "مستعملة" : "Used";
+  const isBookable = !car.sold;
 
   const specs = [
     { icon: Zap, label: locale === "ar" ? "القوة" : "Power", value: car.specs.power || "—" },
@@ -115,17 +122,22 @@ export default function CarCard({
 
         {/* Meta row */}
         <div className="absolute top-0 inset-x-0 flex items-center justify-between gap-2 p-3">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-1.5">
+            {car.sold && (
+              <Badge variant="sold" size="sm">
+                {locale === "ar" ? "مباعة" : "Sold"}
+              </Badge>
+            )}
             {car.featured && (
-              <span className="inline-flex items-center gap-1 rounded-md bg-gold px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-luxury-black">
+              <Badge variant="featured" size="sm">
                 <Sparkles className="h-3 w-3" />
                 {locale === "ar" ? "مميزة" : "Featured"}
-              </span>
+              </Badge>
             )}
           </div>
-          <span className="rounded-md bg-black/50 px-2.5 py-1 text-[10px] font-medium uppercase tracking-wider text-cream/90 backdrop-blur-sm">
+          <Badge variant="category" size="sm">
             {categoryLabel}
-          </span>
+          </Badge>
         </div>
 
         {/* Title on image */}
@@ -136,19 +148,22 @@ export default function CarCard({
           <h3 className="mt-0.5 font-playfair text-xl font-bold leading-tight text-cream sm:text-2xl">
             {car.name}
           </h3>
-          <div className="mt-2 flex items-center gap-2">
-            <span
-              className={`inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider ${
-                car.available ? "text-emerald-400" : "text-red-400"
-              }`}
+          <div className="mt-2 flex flex-wrap items-center gap-1.5">
+            <Badge variant="condition" size="sm">
+              <Tag className="h-3 w-3" />
+              {conditionLabel}
+            </Badge>
+            <Badge
+              variant={car.sold ? "sold" : "available"}
+              size="sm"
+              dot={!car.sold}
             >
-              <span
-                className={`h-1.5 w-1.5 rounded-full ${
-                  car.available ? "bg-emerald-400" : "bg-red-400"
-                }`}
-              />
-              {car.available ? t("available") : t("unavailable")}
-            </span>
+              {car.sold
+                ? locale === "ar"
+                  ? "مباعة"
+                  : "Sold"
+                : t("available")}
+            </Badge>
           </div>
         </div>
       </Link>
@@ -181,10 +196,10 @@ export default function CarCard({
         <div className="mt-4 flex items-center gap-2">
           <Link href={`/fleet/${car.id}`} className="flex-1">
             <Button
-              variant={car.available ? "gold" : "outline"}
+              variant={isBookable ? "gold" : "outline"}
               size="sm"
               className={`w-full text-xs tracking-widest uppercase ${
-                !car.available ? "opacity-50 pointer-events-none" : ""
+                !isBookable ? "opacity-50 pointer-events-none" : ""
               }`}
             >
               {t("viewDetails")}
