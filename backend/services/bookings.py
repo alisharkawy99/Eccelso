@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from uuid import UUID
 
 from fastapi import HTTPException, status
@@ -10,42 +10,9 @@ from models.bookings import Booking, BookingStatus
 from models.cars import Car
 from models.users import RoleEnum, Users
 from schemas.bookings import AdminBookingStats, BookingCreate
-from services.cars import mark_car_sold
-
-SOLD_VISIBILITY_HOURS = 48
+from services.sold_cars import mark_car_sold, purge_expired_sold_cars
 
 OPEN_STATUSES = (BookingStatus.PENDING.value, BookingStatus.APPROVED.value)
-
-
-async def purge_expired_sold_cars(db: AsyncSession) -> None:
-    cutoff = datetime.now(timezone.utc) - timedelta(hours=SOLD_VISIBILITY_HOURS)
-    result = await db.execute(
-        select(Car)
-        .options(selectinload(Car.images))
-        .where(Car.sold.is_(True), Car.sold_at.isnot(None), Car.sold_at < cutoff)
-    )
-    expired_cars = result.scalars().all()
-    if not expired_cars:
-        return
-
-    import asyncio
-    import cloudinary.uploader
-
-    for car in expired_cars:
-        for img in car.images:
-            await asyncio.to_thread(cloudinary.uploader.destroy, img.public_id)
-        await db.delete(car)
-
-    await db.commit()
-
-
-def _public_car_filter(query):
-    cutoff = datetime.now(timezone.utc) - timedelta(hours=SOLD_VISIBILITY_HOURS)
-    return query.where(
-        (Car.sold.is_(False))
-        | (Car.sold.is_(True) & Car.sold_at.isnot(None) & (Car.sold_at >= cutoff))
-    )
-
 
 async def _get_booking_with_relations(db: AsyncSession, booking_id: UUID) -> Booking:
     result = await db.execute(
