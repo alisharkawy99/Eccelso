@@ -1,13 +1,14 @@
 from uuid import UUID
 from fastapi import APIRouter, HTTPException
 from app.database import SessionDep
+from app.dependencies.auth import AdminDep
 from services.images import delete_image
 
 router = APIRouter(prefix="/images", tags=["Images"])
 
 
 @router.delete("/{image_id}")
-async def delete_image_endpoint(image_id: UUID, session: SessionDep):
+async def delete_image_endpoint(image_id: UUID, session: SessionDep, _admin: AdminDep):
     deleted = await delete_image(session, image_id)
     if not deleted:
         raise HTTPException(status_code=404, detail="Image not found")

@@ -5,6 +5,7 @@ from fastapi import APIRouter, status, Depends, HTTPException, UploadFile, File
 from services.cars import create_car, list_cars, update_car, delete_car, get_car
 from services.images import create_car_image
 from app.database import SessionDep
+from app.dependencies.auth import AdminDep
 from schemas.cars import CarCreate, CarFormDependency, CarResponse
 
 router = APIRouter(prefix="/cars", tags=["Cars"])
@@ -24,7 +25,9 @@ async def get_car_endpoint(session: SessionDep, car_id: UUID):
 
 @router.post("", response_model=CarResponse, status_code=status.HTTP_201_CREATED)
 async def create_car_endpoint(
-    session: SessionDep, data: CarFormDependency = Depends(CarFormDependency)
+    session: SessionDep,
+    _admin: AdminDep,
+    data: CarFormDependency = Depends(CarFormDependency),
 ):
     specs_dict = json.loads(data.specs) if data.specs else {}
 
@@ -46,6 +49,7 @@ async def create_car_endpoint(
 async def update_car_endpoint(
     session: SessionDep,
     car_id: UUID,
+    _admin: AdminDep,
     data: CarFormDependency = Depends(CarFormDependency),
 ):
     await get_car(session, car_id)
@@ -53,7 +57,7 @@ async def update_car_endpoint(
 
 
 @router.delete("/{car_id}")
-async def delete_car_endpoint(session: SessionDep, car_id: UUID):
+async def delete_car_endpoint(session: SessionDep, car_id: UUID, _admin: AdminDep):
     await delete_car(session, car_id)
     return {"message": "Car deleted successfully"}
 
@@ -65,6 +69,7 @@ async def upload_car_images(
         List[UploadFile], File(description="Upload multiple images")
     ],
     session: SessionDep,
+    _admin: AdminDep,
 ):
     await get_car(session, car_id)
     added_images = []

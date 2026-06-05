@@ -18,6 +18,7 @@ import {
   X,
 } from "lucide-react";
 import { apiClient } from "@/lib/api";
+import { notifyAuthChange } from "@/app/hooks/useAuth";
 import {
   FieldErrors,
   hasErrors,
@@ -135,6 +136,7 @@ export default function UserAuthForm({ onClose }: UserAuthFormProps) {
             secure: process.env.NODE_ENV === "production",
           });
           sessionStorage.setItem("user", JSON.stringify(response.data.user));
+          notifyAuthChange();
           onClose();
         }
       } else {

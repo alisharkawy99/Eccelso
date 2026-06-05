@@ -17,6 +17,7 @@ import {
   ChevronRight,
   Cog,
   ImagePlus,
+  MessageCircle,
   Plus,
   Settings2,
   Sparkles,
@@ -26,18 +27,20 @@ import {
 } from "lucide-react";
 import { apiClient } from "@/lib/api";
 import Modal from "@/components/Modal";
+import { useAuth } from "@/app/hooks/useAuth";
 
-const galleryActionClass =
-  "flex h-9 w-9 items-center justify-center rounded-xl border border-luxury-border/60 bg-luxury-black/70 backdrop-blur-sm text-cream/60 transition-all duration-200 hover:border-gold/40 hover:bg-gold/10 hover:text-gold";
+const galleryBtn =
+  "flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-black/50 backdrop-blur-md text-cream/70 transition-all duration-200 hover:border-gold/50 hover:bg-gold/10 hover:text-gold";
 
-const galleryDeleteClass =
-  "flex h-7 w-7 items-center justify-center rounded-lg border border-luxury-border/50 bg-luxury-black/70 backdrop-blur-sm text-cream/50 transition-all duration-200 hover:border-red-500/50 hover:bg-red-500/15 hover:text-red-400";
+const thumbDeleteBtn =
+  "flex h-7 w-7 items-center justify-center rounded-lg border border-white/10 bg-black/60 backdrop-blur-sm text-cream/50 transition-all opacity-0 group-hover:opacity-100 hover:border-red-500/50 hover:bg-red-500/20 hover:text-red-400";
 
 export default function CarDetailPage() {
   const params = useParams();
   const t = useTranslations("car");
   const locale = useLocale();
   const isRTL = locale === "ar";
+  const { isAdmin } = useAuth();
 
   const [car, setCar] = useState<Car | null>(null);
   const [loading, setLoading] = useState(true);
@@ -47,6 +50,7 @@ export default function CarDetailPage() {
   const [openUpload, setOpenUpload] = useState(false);
   const [deleteImageId, setDeleteImageId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const thumbStripRef = useRef<HTMLDivElement>(null);
   const [images, setImages] = useState<File[]>([]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -81,6 +85,19 @@ export default function CarDetailPage() {
   useEffect(() => {
     refreshCarData();
   }, [refreshCarData]);
+
+  useEffect(() => {
+    const strip = thumbStripRef.current;
+    if (!strip) return;
+    const thumb = strip.querySelector<HTMLElement>(
+      `[data-thumb-index="${activeImage}"]`,
+    );
+    thumb?.scrollIntoView({
+      behavior: "smooth",
+      block: "nearest",
+      inline: "center",
+    });
+  }, [activeImage]);
 
   const handleUploadIcons = async () => {
     if (images.length === 0) return;
@@ -119,9 +136,22 @@ export default function CarDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-luxury-black pt-20 flex items-center justify-center">
-        <div className="text-gold/40 text-sm tracking-widest uppercase animate-pulse">
-          Loading...
+      <div className="min-h-screen bg-luxury-black pt-24 pb-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 animate-pulse">
+          <div className="h-4 w-32 bg-luxury-gray rounded mb-8" />
+          <div className="grid grid-cols-1 lg:grid-cols-[1.45fr_1fr] gap-10">
+            <div className="aspect-[4/3] sm:aspect-[3/2] bg-luxury-gray rounded-2xl" />
+            <div className="space-y-4">
+              <div className="h-6 w-24 bg-luxury-gray rounded" />
+              <div className="h-10 w-3/4 bg-luxury-gray rounded" />
+              <div className="h-20 bg-luxury-gray rounded-xl" />
+              <div className="grid grid-cols-2 gap-3">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="h-16 bg-luxury-gray rounded-lg" />
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -142,14 +172,26 @@ export default function CarDetailPage() {
 
   const specItems = [
     { label: t("engine"), value: car.specs.engine, icon: Cog },
-    { label: t("power"), value: car.specs.power || "—", icon: Zap },
-    { label: t("seats"), value: String(car.specs.seats ?? "—"), icon: Users },
+    car.specs.power
+      ? { label: t("power"), value: car.specs.power, icon: Zap }
+      : null,
+    car.specs.seats != null
+      ? {
+          label: t("seats"),
+          value: String(car.specs.seats),
+          icon: Users,
+        }
+      : null,
     {
       label: t("transmission"),
       value: car.specs.transmission,
       icon: Settings2,
     },
-  ];
+  ].filter(Boolean) as {
+    label: string;
+    value: string;
+    icon: typeof Cog;
+  }[];
 
   const uploadImages = () => (
     <div className="flex flex-col gap-4">
@@ -196,7 +238,7 @@ export default function CarDetailPage() {
           ))
         )}
       </div>
-      <div className="flex flex-row gap-3">
+      <div className="flex gap-3">
         <Button
           type="button"
           onClick={() => {
@@ -291,11 +333,11 @@ export default function CarDetailPage() {
         }
       />
 
-      <div className="pt-24 pb-4 bg-luxury-black border-b border-luxury-border/20">
+      <div className="min-h-screen bg-luxury-black pt-24 pb-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <Link
             href="/fleet"
-            className={`inline-flex items-center gap-2 text-xs tracking-widest uppercase text-cream/40 hover:text-gold transition-colors${isRTL ? " flex-row-reverse" : ""}`}
+            className={`inline-flex items-center gap-2 text-xs tracking-widest uppercase text-cream/40 hover:text-gold transition-colors mb-8${isRTL ? " flex-row-reverse" : ""}`}
           >
             {isRTL ? (
               <ArrowRight className="w-3.5 h-3.5" />
@@ -304,44 +346,40 @@ export default function CarDetailPage() {
             )}
             {t("backToFleet")}
           </Link>
-        </div>
-      </div>
 
-      <section className="bg-luxury-black pb-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-[1.45fr_1fr] gap-10 lg:gap-14 items-start">
             {/* Gallery */}
-            <div className="space-y-3">
-              <div className="relative aspect-[16/10] bg-luxury-gray overflow-hidden rounded-xl border border-luxury-border/30">
+            <div className="space-y-4">
+              <div className="relative aspect-[4/3] sm:aspect-[3/2] overflow-hidden rounded-2xl border border-luxury-border/30 bg-luxury-gray shadow-[0_24px_48px_-12px_rgba(0,0,0,0.55)]">
                 <Image
                   src={car.images[activeImage].url}
-                  alt={`${car.name} - image ${activeImage + 1}`}
+                  alt={`${car.name} - ${activeImage + 1}`}
                   fill
-                  className="object-cover transition-opacity duration-300"
+                  className="object-cover"
                   sizes="(max-width: 1024px) 100vw, 50vw"
                   priority
                 />
 
-                <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-luxury-black/60 to-transparent pointer-events-none" />
-                <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-luxury-black/60 to-transparent pointer-events-none" />
-
-                <div
-                  className={`absolute top-3 flex items-center gap-2${isRTL ? " left-3" : " right-3"}`}
-                >
-                  <button
-                    type="button"
-                    onClick={() => setOpenUpload(true)}
-                    className={galleryActionClass}
-                    title="Add images"
-                    aria-label="Add images"
+                {isAdmin && (
+                  <div
+                    className={`absolute top-3 flex items-center gap-2${isRTL ? " left-3" : " right-3"}`}
                   >
-                    <Plus className="w-4 h-4" />
-                  </button>
-                </div>
+                    <button
+                      type="button"
+                      onClick={() => setOpenUpload(true)}
+                      className={galleryBtn}
+                      aria-label="Add images"
+                    >
+                      <Plus className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
 
                 {car.images.length > 1 && (
                   <>
-                    <span className="absolute bottom-3 left-3 rtl:left-auto rtl:right-3 rounded-lg border border-luxury-border/50 bg-luxury-black/70 px-2.5 py-1 text-[10px] uppercase tracking-widest text-cream/60 backdrop-blur-sm">
+                    <span
+                      className={`absolute bottom-3 rounded-lg border border-luxury-border/50 bg-luxury-black/70 px-2.5 py-1 text-[10px] uppercase tracking-widest text-cream/60 backdrop-blur-sm${isRTL ? " right-3" : " left-3"}`}
+                    >
                       {activeImage + 1} / {car.images.length}
                     </span>
                     <button
@@ -352,10 +390,10 @@ export default function CarDetailPage() {
                             (p - 1 + car.images.length) % car.images.length,
                         )
                       }
-                      className={`absolute top-1/2 -translate-y-1/2 ${galleryActionClass} ${
+                      className={`absolute top-1/2 -translate-y-1/2 ${galleryBtn} ${
                         isRTL ? "right-3" : "left-3"
                       }`}
-                      aria-label="Previous image"
+                      aria-label="Previous"
                     >
                       {isRTL ? (
                         <ChevronRight className="w-4 h-4" />
@@ -368,10 +406,10 @@ export default function CarDetailPage() {
                       onClick={() =>
                         setActiveImage((p) => (p + 1) % car.images.length)
                       }
-                      className={`absolute top-1/2 -translate-y-1/2 ${galleryActionClass} ${
+                      className={`absolute top-1/2 -translate-y-1/2 ${galleryBtn} ${
                         isRTL ? "left-3" : "right-3"
                       }`}
-                      aria-label="Next image"
+                      aria-label="Next"
                     >
                       {isRTL ? (
                         <ChevronLeft className="w-4 h-4" />
@@ -384,86 +422,88 @@ export default function CarDetailPage() {
               </div>
 
               {car.images.length > 1 && (
-                <div
-                  className={`flex gap-2 overflow-x-auto pb-1${isRTL ? " flex-row-reverse" : ""}`}
-                >
-                  {car.images.map((img, i) => (
-                    <div
-                      key={img.id}
-                      className="group relative shrink-0 w-24 aspect-[4/3]"
-                    >
-                      <button
-                        type="button"
-                        onClick={() => setActiveImage(i)}
-                        className={`relative w-full h-full overflow-hidden rounded-lg border-2 transition-all ${
-                          activeImage === i
-                            ? "border-gold ring-1 ring-gold/30"
-                            : "border-transparent opacity-50 hover:opacity-90"
-                        }`}
+                <div className="relative">
+                  <div
+                    className={`pointer-events-none absolute inset-y-0 z-10 w-10 bg-gradient-to-r from-luxury-black to-transparent${isRTL ? " right-0 rotate-180" : " left-0"}`}
+                  />
+                  <div
+                    className={`pointer-events-none absolute inset-y-0 z-10 w-10 bg-gradient-to-l from-luxury-black to-transparent${isRTL ? " left-0 rotate-180" : " right-0"}`}
+                  />
+
+                  <div
+                    ref={thumbStripRef}
+                    className={`flex gap-3 overflow-x-auto scroll-smooth snap-x snap-mandatory px-1 py-2 rounded-xl border border-luxury-border/20 bg-luxury-gray/15 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden${isRTL ? " flex-row-reverse" : ""}`}
+                  >
+                    {car.images.map((img, i) => (
+                      <div
+                        key={img.id}
+                        data-thumb-index={i}
+                        className="group relative shrink-0 snap-center w-28 sm:w-32 aspect-[4/3]"
                       >
-                        <Image
-                          src={img.url}
-                          alt={`${car.name} thumbnail ${i + 1}`}
-                          fill
-                          className="object-cover"
-                          sizes="96px"
-                        />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setDeleteImageId(img.id);
-                        }}
-                        className={`absolute top-1 right-1 opacity-0 group-hover:opacity-100 ${galleryDeleteClass}`}
-                        title="Delete image"
-                        aria-label="Delete image"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  ))}
+                        <button
+                          type="button"
+                          onClick={() => setActiveImage(i)}
+                          className={`relative w-full h-full overflow-hidden rounded-xl transition-all duration-200 ${
+                            activeImage === i
+                              ? "ring-2 ring-gold ring-offset-2 ring-offset-luxury-black opacity-100 shadow-[0_0_20px_rgba(212,175,55,0.15)]"
+                              : "ring-1 ring-luxury-border/30 opacity-50 hover:opacity-85 hover:ring-gold/35"
+                          }`}
+                        >
+                          <Image
+                            src={img.url}
+                            alt={`${car.name} ${i + 1}`}
+                            fill
+                            className="object-cover"
+                            sizes="128px"
+                          />
+                        </button>
+                        {isAdmin && (
+                          <button
+                            type="button"
+                            onClick={() => setDeleteImageId(img.id)}
+                            className={`absolute top-1.5 right-1.5 ${thumbDeleteBtn}`}
+                            aria-label="Delete image"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
 
-            {/* Info */}
-            <div className="space-y-6 lg:sticky lg:top-24">
-              <div className="space-y-4">
-                <div
-                  className={`flex items-center gap-2 flex-wrap${isRTL ? " flex-row-reverse" : ""}`}
-                >
-                  <Badge variant="gold">{categoryLabel}</Badge>
-                  <Badge variant={car.available ? "available" : "unavailable"}>
-                    {car.available ? t("available") : t("unavailable")}
+            {/* Details — same view, no extra sections */}
+            <div className={`space-y-6${isRTL ? " text-right" : ""}`}>
+              <div
+                className={`flex flex-wrap items-center gap-2${isRTL ? " flex-row-reverse" : ""}`}
+              >
+                <Badge variant="gold">{categoryLabel}</Badge>
+                <Badge variant={car.available ? "available" : "unavailable"}>
+                  {car.available ? t("available") : t("unavailable")}
+                </Badge>
+                {car.featured && (
+                  <Badge variant="gold" className="gap-1">
+                    <Sparkles className="h-3 w-3" />
+                    {locale === "ar" ? "مميزة" : "Featured"}
                   </Badge>
-                  {car.featured && (
-                    <Badge variant="gold" className="gap-1">
-                      <Sparkles className="h-3 w-3" />
-                      {locale === "ar" ? "مميزة" : "Featured"}
-                    </Badge>
-                  )}
-                </div>
+                )}
+              </div>
 
-                <div>
-                  <p className="text-xs tracking-[0.3em] uppercase text-gold/70 mb-1">
-                    {car.brand}
-                  </p>
-                  <h1 className="font-playfair text-3xl sm:text-4xl font-bold text-cream leading-tight">
-                    {car.name}
-                  </h1>
-                </div>
+              <div>
+                <p className="text-xs tracking-[0.3em] uppercase text-cream/40 mb-1">
+                  {car.brand}
+                </p>
+                <h1 className="font-playfair text-3xl sm:text-4xl font-bold text-cream leading-tight">
+                  {car.name}
+                </h1>
               </div>
 
               {car.description && (
-                <div className="card-glass p-5 space-y-2">
-                  <p className="text-[10px] uppercase tracking-[0.25em] text-gold">
-                    {locale === "ar" ? "نبذة" : "Overview"}
-                  </p>
-                  <p className="text-cream/55 text-sm leading-relaxed">
-                    {car.description}
-                  </p>
-                </div>
+                <p className="text-cream/50 text-sm leading-relaxed border-l-2 border-gold/30 pl-4 rtl:border-l-0 rtl:border-r-2 rtl:pl-0 rtl:pr-4">
+                  {car.description}
+                </p>
               )}
 
               <div className="space-y-3">
@@ -476,15 +516,15 @@ export default function CarDetailPage() {
                     return (
                       <div
                         key={spec.label}
-                        className={`card-glass p-4 space-y-2${isRTL ? " text-right" : ""}`}
+                        className="rounded-xl border border-luxury-border/25 bg-luxury-gray/25 p-3 space-y-1.5"
                       >
                         <div
                           className={`flex items-center gap-1.5 text-gold/70${isRTL ? " flex-row-reverse" : ""}`}
                         >
                           <Icon className="h-3.5 w-3.5 shrink-0" />
-                          <p className="text-[10px] tracking-widest uppercase text-cream/35">
+                          <span className="text-[10px] tracking-widest uppercase text-cream/35">
                             {spec.label}
-                          </p>
+                          </span>
                         </div>
                         <p className="text-sm font-medium text-cream">
                           {spec.value}
@@ -496,7 +536,7 @@ export default function CarDetailPage() {
               </div>
 
               <div
-                className={`flex gap-3 pt-2${isRTL ? " flex-row-reverse" : ""}`}
+                className={`flex flex-col sm:flex-row gap-3 pt-2 border-t border-luxury-border/30${isRTL ? " sm:flex-row-reverse" : ""}`}
               >
                 <Link href={`/booking?car=${car.id}`} className="flex-1">
                   <Button
@@ -512,8 +552,14 @@ export default function CarDetailPage() {
                   href="https://wa.me/201000000000"
                   target="_blank"
                   rel="noopener noreferrer"
+                  className="flex-1"
                 >
-                  <Button variant="outline" size="lg">
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className="w-full gap-2"
+                  >
+                    <MessageCircle className="h-4 w-4" />
                     WhatsApp
                   </Button>
                 </a>
@@ -521,7 +567,7 @@ export default function CarDetailPage() {
             </div>
           </div>
         </div>
-      </section>
+      </div>
     </>
   );
 }

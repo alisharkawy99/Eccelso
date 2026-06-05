@@ -13,6 +13,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import Cookies from "js-cookie";
+import { notifyAuthChange } from "@/app/hooks/useAuth";
 
 interface UserProfileMenuProps {
   userName: string;
@@ -83,6 +84,7 @@ export default function UserProfileMenu({
   const handleLogout = () => {
     Cookies.remove("authToken");
     sessionStorage.removeItem("user");
+    notifyAuthChange();
     window.location.reload();
   };
 

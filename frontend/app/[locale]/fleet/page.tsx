@@ -7,6 +7,7 @@ import { getCars, getCarsByCategory } from "@/lib/api";
 import CarCard from "@/components/CarCard";
 import axios from "axios";
 import { useCars } from "@/app/hooks/useCar";
+import { useAuth } from "@/app/hooks/useAuth";
 import CarForm from "@/components/CarForm";
 import Modal from "@/components/Modal";
 import { Button } from "@/components/ui/button";
@@ -27,6 +28,7 @@ export default function FleetPage() {
   const locale = useLocale();
   const isRTL = locale === "ar";
   const { handleDeleteCar, isDeleting } = useCars();
+  const { isAdmin } = useAuth();
   const [cars, setCars] = useState<Car[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState<"all" | CarCategory>("all");
@@ -110,15 +112,17 @@ export default function FleetPage() {
                 {locale === "ar" ? "المتاحة فقط" : "Available Only"}
               </span>
             </label>
-            <Button
-              variant="gold"
-              size="sm"
-              className="ms-auto gap-2 text-xs tracking-widest uppercase"
-              onClick={() => setOpenModal(true)}
-            >
-              <Plus className="h-4 w-4" />
-              {locale === "ar" ? "إضافة سيارة" : "Add Vehicle"}
-            </Button>
+            {isAdmin && (
+              <Button
+                variant="gold"
+                size="sm"
+                className="ms-auto gap-2 text-xs tracking-widest uppercase"
+                onClick={() => setOpenModal(true)}
+              >
+                <Plus className="h-4 w-4" />
+                {locale === "ar" ? "إضافة سيارة" : "Add Vehicle"}
+              </Button>
+            )}
           </div>
         </div>
       </section>
@@ -150,7 +154,8 @@ export default function FleetPage() {
                   <CarCard
                     key={car.id}
                     car={car}
-                    onDelete={() => handleDeleteCar(car.id)}
+                    isAdmin={isAdmin}
+                    onDelete={isAdmin ? () => handleDeleteCar(car.id) : undefined}
                     isDeleting={isDeleting}
                   />
                 ))}

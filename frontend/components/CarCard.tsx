@@ -22,6 +22,7 @@ import {
 
 interface ICarCardProps {
   car: Car;
+  isAdmin?: boolean;
   onDelete?: () => Promise<void>;
   isDeleting?: boolean;
 }
@@ -29,7 +30,12 @@ interface ICarCardProps {
 const actionIconClass =
   "flex h-9 w-9 items-center justify-center rounded-xl border border-luxury-border/60 bg-luxury-gray/40 text-cream/55 transition-all duration-200 hover:border-gold/40 hover:bg-gold/10 hover:text-gold hover:shadow-[0_0_12px_rgba(201,168,76,0.15)]";
 
-export default function CarCard({ car, onDelete, isDeleting }: ICarCardProps) {
+export default function CarCard({
+  car,
+  isAdmin = false,
+  onDelete,
+  isDeleting,
+}: ICarCardProps) {
   const t = useTranslations("fleet");
   const locale = useLocale();
   const [openModal, setOpenModal] = useState(false);
@@ -160,28 +166,30 @@ export default function CarCard({ car, onDelete, isDeleting }: ICarCardProps) {
             </Button>
           </Link>
 
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setOpenModal(true)}
-              className={actionIconClass}
-              aria-label="Edit vehicle"
-              title="Edit vehicle"
-            >
-              <Pencil className="h-4 w-4" />
-            </button>
-            {onDelete && (
+          {isAdmin && (
+            <div className="flex items-center gap-2">
               <button
                 type="button"
-                className={`${actionIconClass} hover:border-red-500/40 hover:bg-red-500/10 hover:text-red-400 hover:shadow-[0_0_12px_rgba(239,68,68,0.12)]`}
-                onClick={() => setDeleteCar(true)}
-                aria-label="Delete vehicle"
-                title="Delete vehicle"
+                onClick={() => setOpenModal(true)}
+                className={actionIconClass}
+                aria-label="Edit vehicle"
+                title="Edit vehicle"
               >
-                <Trash2 className="h-4 w-4" />
+                <Pencil className="h-4 w-4" />
               </button>
-            )}
-          </div>
+              {onDelete && (
+                <button
+                  type="button"
+                  className={`${actionIconClass} hover:border-red-500/40 hover:bg-red-500/10 hover:text-red-400 hover:shadow-[0_0_12px_rgba(239,68,68,0.12)]`}
+                  onClick={() => setDeleteCar(true)}
+                  aria-label="Delete vehicle"
+                  title="Delete vehicle"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
