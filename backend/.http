@@ -5,7 +5,6 @@ Content-Type: application/json
   "name": "Ferrari 488 GTB",
   "brand": "Ferrari",
   "category": "supercar",
-  "pricePerDay": 18000,
   "images": [
     "https://images.unsplash.com/photo-1592198084033-aade902d1aae?w=1200&q=85",
     "https://images.unsplash.com/photo-1583121274602-3e2820c69888?w=1200&q=85",
@@ -29,7 +28,6 @@ Content-Type: application/json
     "name": "Model Y Long Range",
     "brand": "Tesla",
     "category": "SUV",
-    "pricePerDay": 125,
     "images": "tesla_y_v2.jpg",
     "specs": "Dual-Motor AWD, 4.8s 0-60mph",
     "available": true,

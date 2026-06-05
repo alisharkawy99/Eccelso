@@ -32,7 +32,6 @@ async def create_car_endpoint(
         name=data.name,
         brand=data.brand,
         category=data.category,
-        pricePerDay=data.pricePerDay,
         specs=specs_dict,
         description=data.description,
         available=data.available,

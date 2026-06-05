@@ -25,6 +25,7 @@ export default function Modal({
   content,
   isEdit,
   title,
+  subtitle,
   variant = "default",
   size,
 }: {
@@ -33,11 +34,12 @@ export default function Modal({
   content?: React.ReactNode;
   onClose: () => void;
   title?: string;
+  subtitle?: string;
   variant?: ModalVariant;
   size?: ModalSize;
 }) {
-  const resolvedTitle = title ?? (isEdit ? "Edit Car" : undefined);
-  const resolvedSize = size ?? (variant === "auth" ? "xl" : "md");
+  const resolvedTitle = title ?? (isEdit ? "Edit Vehicle" : undefined);
+  const resolvedSize = size ?? (variant === "auth" ? "xl" : isEdit || title ? "lg" : "md");
 
   return (
     <Dialog open={isOpen} onClose={onClose} className="relative z-50">
@@ -51,8 +53,8 @@ export default function Modal({
           transition
           className={`modal-panel relative w-full ${sizeClasses[resolvedSize]} ${variantClasses[variant]}
             transition duration-300 ease-out
-            data-[closed]:scale-95 data-[closed]:opacity-0
-            max-h-[90vh] overflow-y-auto overflow-x-hidden`}
+            data-[closed]:scale-95 data-[closed]:opacity-0 overflow-hidden
+          `}
         >
           <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gold/60 to-transparent" />
 
@@ -67,14 +69,22 @@ export default function Modal({
 
           {resolvedTitle && variant !== "auth" && (
             <div className="mb-5 pe-10">
-              <h2 className="font-playfair text-xl font-semibold text-cream">
+              <p className="text-[10px] uppercase tracking-[0.3em] text-gold/70">
+                Fleet Management
+              </p>
+              <h2 className="mt-1 font-playfair text-xl font-semibold text-cream">
                 {resolvedTitle}
               </h2>
-              <div className="mt-2 h-px w-12 bg-gradient-to-r from-gold/80 to-transparent" />
+              {subtitle && (
+                <p className="mt-1 text-sm text-cream/45">{subtitle}</p>
+              )}
+              <div className="mt-3 h-px w-12 bg-gradient-to-r from-gold/80 to-transparent" />
             </div>
           )}
 
-          <div className={variant === "auth" ? "" : "text-cream"}>{content}</div>
+          <div className={variant === "auth" ? "" : "text-cream"}>
+            {content}
+          </div>
         </DialogPanel>
       </div>
     </Dialog>

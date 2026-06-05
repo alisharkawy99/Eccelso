@@ -16,7 +16,6 @@ export interface Car {
   name: string;
   brand: string;
   category: CarCategory;
-  pricePerDay: number;
   images: ICarImages[];
   specs: CarSpecs;
   available: boolean;

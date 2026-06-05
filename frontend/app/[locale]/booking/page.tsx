@@ -7,7 +7,7 @@ import { Car } from '@/types';
 import { getCars, submitBooking } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { formatPrice, calculateDays, getTodayISO, getTomorrowISO } from '@/lib/utils';
+import { calculateDays, getTodayISO, getTomorrowISO } from '@/lib/utils';
 import { FormField } from '@/components/ui/FormField';
 import {
   FieldErrors,
@@ -50,7 +50,6 @@ export default function BookingPage() {
 
   const selectedCar = cars.find((c) => c.id === form.carId) || null;
   const totalDays = calculateDays(form.startDate, form.endDate);
-  const totalPrice = selectedCar ? totalDays * selectedCar.pricePerDay : 0;
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -139,7 +138,7 @@ export default function BookingPage() {
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className={`grid grid-cols-1 lg:grid-cols-3 gap-8${isRTL ? ' lg:flex lg:flex-row-reverse' : ''}`}>
             {/* ── Form ── */}
-            <form onSubmit={handleSubmit} className="lg:col-span-2 space-y-6" noValidate>
+            <form onSubmit={handleSubmit} className="form-scroll lg:col-span-2 space-y-6 max-h-[70vh]" noValidate>
               <FormField label={t('selectCar')} error={errors.carId} required>
                 <select
                   name="carId"
@@ -153,7 +152,7 @@ export default function BookingPage() {
                   <option value="">{loading ? '...' : t('selectCar')}</option>
                   {cars.map((car) => (
                     <option key={car.id} value={car.id}>
-                      {car.name} — {formatPrice(car.pricePerDay, locale)}/{locale === 'ar' ? 'يوم' : 'day'}
+                      {car.name} — {car.brand}
                     </option>
                   ))}
                 </select>
@@ -281,14 +280,11 @@ export default function BookingPage() {
                     </div>
 
                     <div className="border-t border-luxury-border/30 pt-3">
-                      <div className={`flex justify-between items-center${isRTL ? ' flex-row-reverse' : ''}`}>
-                        <span className="text-xs tracking-widest uppercase text-cream/40">
-                          {t('totalPrice')}
-                        </span>
-                        <span className="font-playfair text-lg font-bold text-gold">
-                          {totalDays > 0 ? formatPrice(totalPrice, locale) : '—'}
-                        </span>
-                      </div>
+                      <p className={`text-xs text-cream/45 leading-relaxed${isRTL ? ' text-right' : ''}`}>
+                        {locale === 'ar'
+                          ? 'سيتواصل فريقنا معك لتأكيد التفاصيل والأسعار.'
+                          : 'Our team will contact you to confirm details and pricing.'}
+                      </p>
                     </div>
                   </div>
                 )}

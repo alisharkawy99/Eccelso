@@ -16,7 +16,6 @@ class Car(Base):
     name = Column(String, index=True)
     brand = Column(String, index=True)
     category = Column(String, index=True)
-    price_per_day = Column(Integer)
     specs = Column(JSON)
     available = Column(Boolean, default=True)
     featured = Column(Boolean, default=False)

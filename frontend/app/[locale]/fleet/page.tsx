@@ -9,7 +9,8 @@ import axios from "axios";
 import { useCars } from "@/app/hooks/useCar";
 import CarForm from "@/components/CarForm";
 import Modal from "@/components/Modal";
-import { Button } from "@headlessui/react";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 
 const FILTERS: { key: "all" | CarCategory; labelKey: string }[] = [
   { key: "all", labelKey: "filterAll" },
@@ -110,10 +111,13 @@ export default function FleetPage() {
               </span>
             </label>
             <Button
-              className="ms-auto btn-gold-outline text-xs tracking-widest uppercase px-5 py-2"
+              variant="gold"
+              size="sm"
+              className="ms-auto gap-2 text-xs tracking-widest uppercase"
               onClick={() => setOpenModal(true)}
             >
-              Add Car
+              <Plus className="h-4 w-4" />
+              {locale === "ar" ? "إضافة سيارة" : "Add Vehicle"}
             </Button>
           </div>
         </div>
@@ -157,6 +161,13 @@ export default function FleetPage() {
         <Modal
           isOpen={openModal}
           onClose={() => setOpenModal(false)}
+          title={locale === "ar" ? "إضافة سيارة جديدة" : "Add New Vehicle"}
+          subtitle={
+            locale === "ar"
+              ? "أدخل تفاصيل السيارة لإضافتها إلى الأسطول"
+              : "Fill in the details to list a new vehicle in your fleet"
+          }
+          size="lg"
           content={
             <CarForm
               onClose={() => setOpenModal(false)}

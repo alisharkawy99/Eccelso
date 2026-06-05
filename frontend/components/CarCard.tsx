@@ -7,15 +7,27 @@ import { Car } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CATEGORY_LABELS } from "@/types";
-import { SetStateAction, Dispatch, useState } from "react";
+import { useState } from "react";
 import Modal from "./Modal";
 import CarForm from "./CarForm";
-import { Trash2 } from "lucide-react";
+import {
+  Cog,
+  Pencil,
+  Settings2,
+  Sparkles,
+  Trash2,
+  Users,
+  Zap,
+} from "lucide-react";
+
 interface ICarCardProps {
   car: Car;
   onDelete?: () => Promise<void>;
   isDeleting?: boolean;
 }
+
+const actionIconClass =
+  "flex h-9 w-9 items-center justify-center rounded-xl border border-luxury-border/60 bg-luxury-gray/40 text-cream/55 transition-all duration-200 hover:border-gold/40 hover:bg-gold/10 hover:text-gold hover:shadow-[0_0_12px_rgba(201,168,76,0.15)]";
 
 export default function CarCard({ car, onDelete, isDeleting }: ICarCardProps) {
   const t = useTranslations("fleet");
@@ -23,14 +35,18 @@ export default function CarCard({ car, onDelete, isDeleting }: ICarCardProps) {
   const [openModal, setOpenModal] = useState(false);
   const [deleteCar, setDeleteCar] = useState(false);
   const categoryLabel = CATEGORY_LABELS[car.category][locale as "en" | "ar"];
-  const deleteConfirmation = () => {
-    return (
+
+  const deleteConfirmation = () => (
+    <div className="space-y-4">
+      <p className="text-sm text-cream/55">
+        This will permanently remove{" "}
+        <span className="text-cream font-medium">{car.name}</span> from the
+        fleet. This action cannot be undone.
+      </p>
       <div className="flex flex-row gap-3">
         <Button
           type="button"
-          onClick={() => {
-            setDeleteCar(false);
-          }}
+          onClick={() => setDeleteCar(false)}
           variant="outline"
           size="sm"
           className="w-full border-luxury-border text-cream"
@@ -38,29 +54,34 @@ export default function CarCard({ car, onDelete, isDeleting }: ICarCardProps) {
           Cancel
         </Button>
         <Button
-          type="submit"
+          type="button"
           variant="gold"
           size="sm"
+          disabled={isDeleting}
           className="w-full uppercase tracking-widest"
           onClick={() => {
             onDelete?.();
             setDeleteCar(false);
           }}
         >
-          {isDeleting ? "Deleting car..." : "Delete"}
+          {isDeleting ? "Deleting..." : "Delete Vehicle"}
         </Button>
       </div>
-    );
-  };
+    </div>
+  );
+
   return (
     <div className="card-glass group overflow-hidden flex flex-col">
-      {/* Image */}
       <Modal
         isOpen={deleteCar}
         onClose={() => setDeleteCar(false)}
         content={deleteConfirmation()}
-        title={`Are you Sure u want to delete ${car.name}`}
+        title="Delete Vehicle?"
+        subtitle="Confirm removal from your fleet"
+        variant="confirm"
+        size="sm"
       />
+
       <div className="relative h-52 overflow-hidden bg-luxury-gray">
         <Image
           src={car.images?.[0]?.url ?? ""}
@@ -71,52 +92,64 @@ export default function CarCard({ car, onDelete, isDeleting }: ICarCardProps) {
         />
         <div className="absolute inset-0 bg-gradient-to-t from-luxury-black/80 via-transparent to-transparent" />
 
-        {/* Category badge */}
-        <div className="absolute bottom-3 left-3 rtl:left-auto rtl:right-3">
+        <div className="absolute top-3 left-3 rtl:left-auto rtl:right-3 flex flex-wrap gap-2">
+          {car.featured && (
+            <Badge variant="gold" className="gap-1">
+              <Sparkles className="h-3 w-3" />
+              {locale === "ar" ? "مميزة" : "Featured"}
+            </Badge>
+          )}
+        </div>
+
+        <div className="absolute bottom-3 left-3 rtl:left-auto rtl:right-3 flex flex-wrap gap-2">
           <Badge variant="gold">{categoryLabel}</Badge>
+          <Badge variant={car.available ? "available" : "unavailable"}>
+            {car.available ? t("available") : t("unavailable")}
+          </Badge>
         </div>
       </div>
 
-      {/* Content */}
       <div className="p-5 flex flex-col flex-1 gap-4">
-        <div className="flex flex-row justify-between">
-          <div>
-            <h3 className="font-playfair text-lg font-semibold text-cream leading-tight">
-              {car.name}
-            </h3>
-            <p className="text-xs text-cream/40 tracking-widest uppercase mt-0.5">
-              {car.brand}
-            </p>
+        <div>
+          <h3 className="font-playfair text-lg font-semibold text-cream leading-tight">
+            {car.name}
+          </h3>
+          <p className="text-xs text-cream/40 tracking-widest uppercase mt-0.5">
+            {car.brand}
+          </p>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2.5">
+          <div className="flex items-center gap-1.5 text-xs text-cream/50">
+            <Zap className="h-3.5 w-3.5 shrink-0 text-gold/70" />
+            <span className="truncate">{car.specs.power || "—"}</span>
           </div>
-          {/* Availability badge */}
-          <div>
-            <button
-              onClick={() => setOpenModal(true)}
-              className="btn-gold-outline text-xs tracking-widest uppercase px-5 py-2"
-            >
-              Edit Car
-            </button>
+          <div className="flex items-center gap-1.5 text-xs text-cream/50">
+            <Users className="h-3.5 w-3.5 shrink-0 text-gold/70" />
+            <span>
+              {car.specs.seats ?? "—"}{" "}
+              {locale === "ar" ? "مقاعد" : "seats"}
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5 text-xs text-cream/50 col-span-2">
+            <Cog className="h-3.5 w-3.5 shrink-0 text-gold/70" />
+            <span className="truncate">{car.specs.engine}</span>
+          </div>
+          <div className="flex items-center gap-1.5 text-xs text-cream/50 col-span-2">
+            <Settings2 className="h-3.5 w-3.5 shrink-0 text-gold/70" />
+            <span className="truncate">{car.specs.transmission}</span>
           </div>
         </div>
 
-        {/* Specs mini */}
-        <div className="grid grid-cols-2 gap-2">
-          <div className="text-xs text-cream/50">
-            <span className="text-gold/70">⚡</span> {car.specs.power}
-          </div>
-          <div className="text-xs text-cream/50">
-            <span className="text-gold/70">💺</span> {car.specs.seats}{" "}
-            {locale === "ar" ? "مقاعد" : "seats"}
-          </div>
-          <div className="text-xs text-cream/50 col-span-2 truncate">
-            <span className="text-gold/70">🔧</span> {car.specs.engine}
-          </div>
-        </div>
+        {car.description && (
+          <p className="text-xs text-cream/35 line-clamp-2 leading-relaxed">
+            {car.description}
+          </p>
+        )}
 
         <div className="flex-1" />
 
-        {/* Price + CTA */}
-        <div className="flex items-end justify-between gap-3 pt-3 border-t border-luxury-border/30">
+        <div className="flex items-center justify-between gap-3 pt-3 border-t border-luxury-border/30">
           <Link href={`/fleet/${car.id}`}>
             <Button
               variant="outline"
@@ -126,22 +159,39 @@ export default function CarCard({ car, onDelete, isDeleting }: ICarCardProps) {
               {t("viewDetails")}
             </Button>
           </Link>
-          {onDelete && (
+
+          <div className="flex items-center gap-2">
             <button
-              className="text-[#c9a84c] transition-all duration-300 
-         hover:bg-[#c9a84c]/15 hover:-translate-y-1 
-         hover:shadow-[0_0_15px_rgba(201,168,76,0.6),0_0_30px_rgba(201,168,76,0.3)]
-         hover:drop-shadow-[0_0_5px_rgba(201,168,76,0.5)]"
-              onClick={() => setDeleteCar(true)}
+              type="button"
+              onClick={() => setOpenModal(true)}
+              className={actionIconClass}
+              aria-label="Edit vehicle"
+              title="Edit vehicle"
             >
-              <Trash2 />
+              <Pencil className="h-4 w-4" />
             </button>
-          )}
+            {onDelete && (
+              <button
+                type="button"
+                className={`${actionIconClass} hover:border-red-500/40 hover:bg-red-500/10 hover:text-red-400 hover:shadow-[0_0_12px_rgba(239,68,68,0.12)]`}
+                onClick={() => setDeleteCar(true)}
+                aria-label="Delete vehicle"
+                title="Delete vehicle"
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
+            )}
+          </div>
         </div>
       </div>
+
       <Modal
         onClose={() => setOpenModal(false)}
         isOpen={openModal}
+        isEdit
+        title={`Edit ${car.name}`}
+        subtitle="Update vehicle details and specifications"
+        size="lg"
         content={
           <CarForm onClose={() => setOpenModal(false)} initialData={car} />
         }

@@ -6,7 +6,6 @@ export const dummyCars: Car[] = [
     name: 'Ferrari 488 GTB',
     brand: 'Ferrari',
     category: 'supercar',
-    pricePerDay: 18000,
     images: [
       'https://images.unsplash.com/photo-1592198084033-aade902d1aae?w=1200&q=85',
       'https://images.unsplash.com/photo-1583121274602-3e2820c69888?w=1200&q=85',
@@ -27,7 +26,6 @@ export const dummyCars: Car[] = [
     name: 'Lamborghini Huracán',
     brand: 'Lamborghini',
     category: 'supercar',
-    pricePerDay: 22000,
     images: [
       'https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=1200&q=85',
       'https://images.unsplash.com/photo-1609630875171-b1321377ee65?w=1200&q=85',
@@ -48,7 +46,6 @@ export const dummyCars: Car[] = [
     name: 'Rolls-Royce Ghost',
     brand: 'Rolls-Royce',
     category: 'luxury_sedan',
-    pricePerDay: 25000,
     images: [
       'https://images.unsplash.com/photo-1631295868223-63265b40d9e4?w=1200&q=85',
       'https://images.unsplash.com/photo-1555215695-3004980ad54e?w=1200&q=85',
@@ -69,7 +66,6 @@ export const dummyCars: Car[] = [
     name: 'Porsche 911 Turbo S',
     brand: 'Porsche',
     category: 'sports',
-    pricePerDay: 12000,
     images: [
       'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=1200&q=85',
       'https://images.unsplash.com/photo-1611821064430-0d40291d0f0b?w=1200&q=85',
@@ -90,7 +86,6 @@ export const dummyCars: Car[] = [
     name: 'McLaren 720S',
     brand: 'McLaren',
     category: 'supercar',
-    pricePerDay: 20000,
     images: [
       'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&q=85',
       'https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=1200&q=85',
@@ -111,7 +106,6 @@ export const dummyCars: Car[] = [
     name: 'Bentley Continental GT',
     brand: 'Bentley',
     category: 'luxury_sedan',
-    pricePerDay: 15000,
     images: [
       'https://images.unsplash.com/photo-1555215695-3004980ad54e?w=1200&q=85',
       'https://images.unsplash.com/photo-1631295868223-63265b40d9e4?w=1200&q=85',
@@ -132,7 +126,6 @@ export const dummyCars: Car[] = [
     name: 'Mercedes-AMG G63',
     brand: 'Mercedes-Benz',
     category: 'premium_suv',
-    pricePerDay: 10000,
     images: [
       'https://images.unsplash.com/photo-1563720223185-11003d516935?w=1200&q=85',
       'https://images.unsplash.com/photo-1609630875171-b1321377ee65?w=1200&q=85',
@@ -153,7 +146,6 @@ export const dummyCars: Car[] = [
     name: 'BMW M8 Competition',
     brand: 'BMW',
     category: 'sports',
-    pricePerDay: 9000,
     images: [
       'https://images.unsplash.com/photo-1616422285623-13ff0162193c?w=1200&q=85',
       'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=1200&q=85',

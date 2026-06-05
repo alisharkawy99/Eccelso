@@ -9,18 +9,29 @@ import { Car } from "@/types";
 import { getCarById } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { formatPrice } from "@/lib/utils";
 import { CATEGORY_LABELS } from "@/types";
 import {
   ArrowLeft,
   ArrowRight,
   ChevronLeft,
   ChevronRight,
+  Cog,
+  ImagePlus,
   Plus,
+  Settings2,
+  Sparkles,
   Trash2,
+  Users,
+  Zap,
 } from "lucide-react";
 import { apiClient } from "@/lib/api";
 import Modal from "@/components/Modal";
+
+const galleryActionClass =
+  "flex h-9 w-9 items-center justify-center rounded-xl border border-luxury-border/60 bg-luxury-black/70 backdrop-blur-sm text-cream/60 transition-all duration-200 hover:border-gold/40 hover:bg-gold/10 hover:text-gold";
+
+const galleryDeleteClass =
+  "flex h-7 w-7 items-center justify-center rounded-lg border border-luxury-border/50 bg-luxury-black/70 backdrop-blur-sm text-cream/50 transition-all duration-200 hover:border-red-500/50 hover:bg-red-500/15 hover:text-red-400";
 
 export default function CarDetailPage() {
   const params = useParams();
@@ -31,8 +42,10 @@ export default function CarDetailPage() {
   const [car, setCar] = useState<Car | null>(null);
   const [loading, setLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
+  const [isDeletingImage, setIsDeletingImage] = useState(false);
   const [activeImage, setActiveImage] = useState(0);
   const [openUpload, setOpenUpload] = useState(false);
+  const [deleteImageId, setDeleteImageId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [images, setImages] = useState<File[]>([]);
 
@@ -40,19 +53,24 @@ export default function CarDetailPage() {
     if (e.target.files)
       setImages((prev) => [...prev, ...Array.from(e.target.files!)]);
   };
+
   const removeImage = (index: number) => {
     setImages((prev) => prev.filter((_, i) => i !== index));
   };
 
-  // 1. Define the refetcher function once
   const refreshCarData = useCallback(async () => {
     if (!params.id) return;
     setLoading(true);
     try {
-      console.log("fetching");
       const data = await getCarById(params.id as string);
-      console.log("fetched");
       setCar(data);
+      if (data) {
+        setActiveImage((current) =>
+          current >= data.images.length
+            ? Math.max(0, data.images.length - 1)
+            : current,
+        );
+      }
     } catch (err) {
       console.error("Failed to fetch car data:", err);
     } finally {
@@ -60,13 +78,12 @@ export default function CarDetailPage() {
     }
   }, [params.id]);
 
-  // 2. Use it in useEffect for initial load
   useEffect(() => {
     refreshCarData();
   }, [refreshCarData]);
 
-  // 3. Use it in your handlers
   const handleUploadIcons = async () => {
+    if (images.length === 0) return;
     setIsUploading(true);
     try {
       const formData = new FormData();
@@ -78,7 +95,6 @@ export default function CarDetailPage() {
 
       setImages([]);
       setOpenUpload(false);
-      // Reuse the refetcher
       await refreshCarData();
     } catch (error) {
       console.error("Upload failed:", error);
@@ -87,18 +103,19 @@ export default function CarDetailPage() {
     }
   };
 
-  const handleDeleteImage = useCallback(
-    async (id: string) => {
-      try {
-        await apiClient.delete(`/images/${id}`);
-        // Reuse the refetcher
-        await refreshCarData();
-      } catch (error) {
-        console.error("Failed to delete image:", error);
-      }
-    },
-    [refreshCarData],
-  );
+  const handleDeleteImage = useCallback(async () => {
+    if (!deleteImageId) return;
+    setIsDeletingImage(true);
+    try {
+      await apiClient.delete(`/images/${deleteImageId}`);
+      setDeleteImageId(null);
+      await refreshCarData();
+    } catch (error) {
+      console.error("Failed to delete image:", error);
+    } finally {
+      setIsDeletingImage(false);
+    }
+  }, [deleteImageId, refreshCarData]);
 
   if (loading) {
     return (
@@ -110,7 +127,7 @@ export default function CarDetailPage() {
     );
   }
 
-  if (!car) {
+  if (!car || car.images.length === 0) {
     return (
       <div className="min-h-screen bg-luxury-black pt-20 flex flex-col items-center justify-center gap-4">
         <p className="text-cream/40 text-sm">Car not found</p>
@@ -120,74 +137,92 @@ export default function CarDetailPage() {
       </div>
     );
   }
+
   const categoryLabel = CATEGORY_LABELS[car.category][locale as "en" | "ar"];
 
-  const uploadImages = () => {
-    return (
-      <div className="flex flex-col gap-3">
-        <div
-          onClick={() => fileInputRef.current?.click()}
-          onDrop={(e) => {
-            e.preventDefault();
-            setImages((prev) => [...prev, ...Array.from(e.dataTransfer.files)]);
-          }}
-          onDragOver={(e) => e.preventDefault()}
-          className={`border-2 border-dashed border-luxury-border p-4 h-36 my-2 cursor-pointer flex ${images.length > 0 ? "flex-row gap-4 overflow-x-auto" : "items-center justify-center"}`}
-        >
-          {images.length === 0 ? (
-            <div className="text-center">
-              <p className="text-xs text-cream/60 uppercase">
-                Drag & Drop Images
-              </p>
-              <p className="text-xs text-cream/30">or click to browse</p>
+  const specItems = [
+    { label: t("engine"), value: car.specs.engine, icon: Cog },
+    { label: t("power"), value: car.specs.power || "—", icon: Zap },
+    { label: t("seats"), value: String(car.specs.seats ?? "—"), icon: Users },
+    {
+      label: t("transmission"),
+      value: car.specs.transmission,
+      icon: Settings2,
+    },
+  ];
+
+  const uploadImages = () => (
+    <div className="flex flex-col gap-4">
+      <div
+        onClick={() => fileInputRef.current?.click()}
+        onDrop={(e) => {
+          e.preventDefault();
+          setImages((prev) => [...prev, ...Array.from(e.dataTransfer.files)]);
+        }}
+        onDragOver={(e) => e.preventDefault()}
+        className={`rounded-xl border-2 border-dashed p-4 h-36 cursor-pointer flex transition-colors ${
+          images.length > 0
+            ? "flex-row gap-4 overflow-x-auto border-luxury-border"
+            : "items-center justify-center border-luxury-border hover:border-gold/30"
+        }`}
+      >
+        {images.length === 0 ? (
+          <div className="text-center">
+            <ImagePlus className="mx-auto h-6 w-6 text-gold/50 mb-2" />
+            <p className="text-xs text-cream/60 uppercase tracking-wider">
+              Drag & Drop Images
+            </p>
+            <p className="text-xs text-cream/30">or click to browse</p>
+          </div>
+        ) : (
+          images.map((file, index) => (
+            <div key={index} className="relative min-w-[100px] h-full">
+              <img
+                src={URL.createObjectURL(file)}
+                alt="preview"
+                className="w-full h-full object-cover rounded-lg border border-luxury-border"
+              />
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  removeImage(index);
+                }}
+                className="absolute -top-2 -right-2 bg-luxury-black border border-gold/40 text-gold rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-gold/10"
+              >
+                ×
+              </button>
             </div>
-          ) : (
-            images.map((file, index) => (
-              <div key={index} className="relative min-w-[100px] h-full">
-                <img
-                  src={URL.createObjectURL(file)}
-                  alt="preview"
-                  className="w-full h-full object-cover border border-luxury-border"
-                />
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    removeImage(index);
-                  }}
-                  className="absolute -top-2 -right-2 bg-black text-gold rounded-full w-5 h-5 flex items-center justify-center"
-                >
-                  ×
-                </button>
-              </div>
-            ))
-          )}
-        </div>
-        <div className="flex flex-row justify-between gap-4">
-          <Button
-            type="button"
-            onClick={() => setOpenUpload(false)}
-            variant="outline"
-            className="w-full border-luxury-border text-cream"
-          >
-            Cancel
-          </Button>
-          <Button
-            type="submit"
-            variant="gold"
-            className="w-full uppercase tracking-widest"
-            onClick={handleUploadIcons}
-            disabled={isUploading}
-          >
-            {isUploading ? "Uploading....." : "Upload Images"}
-          </Button>
-        </div>
+          ))
+        )}
       </div>
-    );
-  };
+      <div className="flex flex-row gap-3">
+        <Button
+          type="button"
+          onClick={() => {
+            setOpenUpload(false);
+            setImages([]);
+          }}
+          variant="outline"
+          className="w-full border-luxury-border text-cream"
+        >
+          Cancel
+        </Button>
+        <Button
+          type="button"
+          variant="gold"
+          className="w-full uppercase tracking-widest"
+          onClick={handleUploadIcons}
+          disabled={isUploading || images.length === 0}
+        >
+          {isUploading ? "Uploading..." : "Upload Images"}
+        </Button>
+      </div>
+    </div>
+  );
+
   return (
     <>
-      {/* Back button */}
       <input
         type="file"
         ref={fileInputRef}
@@ -196,7 +231,67 @@ export default function CarDetailPage() {
         multiple
         accept="image/*"
       />
-      <div className="pt-24 pb-4 bg-luxury-black">
+
+      <Modal
+        isOpen={openUpload}
+        onClose={() => {
+          setOpenUpload(false);
+          setImages([]);
+        }}
+        title={locale === "ar" ? "إضافة صور" : "Add Gallery Images"}
+        subtitle={
+          locale === "ar"
+            ? "ارفع صوراً جديدة لهذه السيارة"
+            : "Upload new photos for this vehicle"
+        }
+        size="md"
+        content={uploadImages()}
+      />
+
+      <Modal
+        isOpen={!!deleteImageId}
+        onClose={() => setDeleteImageId(null)}
+        title={locale === "ar" ? "حذف الصورة؟" : "Delete Image?"}
+        subtitle={
+          locale === "ar"
+            ? "سيتم إزالة هذه الصورة من المعرض"
+            : "This photo will be removed from the gallery"
+        }
+        variant="confirm"
+        size="sm"
+        content={
+          <div className="space-y-4">
+            <p className="text-sm text-cream/55">
+              {locale === "ar"
+                ? "لا يمكن التراجع عن هذا الإجراء."
+                : "This action cannot be undone."}
+            </p>
+            <div className="flex gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="w-full border-luxury-border text-cream"
+                onClick={() => setDeleteImageId(null)}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                variant="gold"
+                size="sm"
+                disabled={isDeletingImage}
+                className="w-full uppercase tracking-widest hover:border-red-500/40 hover:bg-red-500/10 hover:text-red-300"
+                onClick={handleDeleteImage}
+              >
+                {isDeletingImage ? "Deleting..." : "Delete Image"}
+              </Button>
+            </div>
+          </div>
+        }
+      />
+
+      <div className="pt-24 pb-4 bg-luxury-black border-b border-luxury-border/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <Link
             href="/fleet"
@@ -212,23 +307,12 @@ export default function CarDetailPage() {
         </div>
       </div>
 
-      {/* Main Content */}
       <section className="bg-luxury-black pb-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
-            {/* ── Gallery ── */}
+            {/* Gallery */}
             <div className="space-y-3">
-              {/* Main image */}
-              <div className="relative aspect-[16/10] bg-luxury-gray overflow-hidden">
-                <button
-                  onClick={() => {
-                    setOpenUpload(true);
-                  }}
-                  className="absolute top-0 right-0 z-50 border border-white rounded-full"
-                  title="Add Image"
-                >
-                  <Plus className="w-5 h-5" />
-                </button>
+              <div className="relative aspect-[16/10] bg-luxury-gray overflow-hidden rounded-xl border border-luxury-border/30">
                 <Image
                   src={car.images[activeImage].url}
                   alt={`${car.name} - image ${activeImage + 1}`}
@@ -237,61 +321,84 @@ export default function CarDetailPage() {
                   sizes="(max-width: 1024px) 100vw, 50vw"
                   priority
                 />
-                {/* Prev/Next arrows */}
+
+                <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-luxury-black/60 to-transparent pointer-events-none" />
+                <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-luxury-black/60 to-transparent pointer-events-none" />
+
+                <div
+                  className={`absolute top-3 flex items-center gap-2${isRTL ? " left-3" : " right-3"}`}
+                >
+                  <button
+                    type="button"
+                    onClick={() => setOpenUpload(true)}
+                    className={galleryActionClass}
+                    title="Add images"
+                    aria-label="Add images"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </button>
+                </div>
+
                 {car.images.length > 1 && (
                   <>
+                    <span className="absolute bottom-3 left-3 rtl:left-auto rtl:right-3 rounded-lg border border-luxury-border/50 bg-luxury-black/70 px-2.5 py-1 text-[10px] uppercase tracking-widest text-cream/60 backdrop-blur-sm">
+                      {activeImage + 1} / {car.images.length}
+                    </span>
                     <button
+                      type="button"
                       onClick={() =>
                         setActiveImage(
                           (p) =>
                             (p - 1 + car.images.length) % car.images.length,
                         )
                       }
-                      className={`absolute top-1/2 -translate-y-1/2 p-2 bg-luxury-black/60 hover:bg-luxury-black text-cream hover:text-gold transition-colors ${
-                        isRTL ? "right-2" : "left-2"
+                      className={`absolute top-1/2 -translate-y-1/2 ${galleryActionClass} ${
+                        isRTL ? "right-3" : "left-3"
                       }`}
+                      aria-label="Previous image"
                     >
                       {isRTL ? (
-                        <ChevronRight className="w-5 h-5" />
+                        <ChevronRight className="w-4 h-4" />
                       ) : (
-                        <ChevronLeft className="w-5 h-5" />
+                        <ChevronLeft className="w-4 h-4" />
                       )}
                     </button>
                     <button
+                      type="button"
                       onClick={() =>
                         setActiveImage((p) => (p + 1) % car.images.length)
                       }
-                      className={`absolute top-1/2 -translate-y-1/2 p-2 bg-luxury-black/60 hover:bg-luxury-black text-cream hover:text-gold transition-colors ${
-                        isRTL ? "left-2" : "right-2"
+                      className={`absolute top-1/2 -translate-y-1/2 ${galleryActionClass} ${
+                        isRTL ? "left-3" : "right-3"
                       }`}
+                      aria-label="Next image"
                     >
                       {isRTL ? (
-                        <ChevronLeft className="w-5 h-5" />
+                        <ChevronLeft className="w-4 h-4" />
                       ) : (
-                        <ChevronRight className="w-5 h-5" />
+                        <ChevronRight className="w-4 h-4" />
                       )}
                     </button>
                   </>
                 )}
               </div>
 
-              {/* Thumbnails */}
               {car.images.length > 1 && (
                 <div
-                  className={`flex gap-2${isRTL ? " flex-row-reverse" : ""}`}
+                  className={`flex gap-2 overflow-x-auto pb-1${isRTL ? " flex-row-reverse" : ""}`}
                 >
                   {car.images.map((img, i) => (
                     <div
                       key={img.id}
-                      className="group relative flex-1 aspect-[4/3]"
+                      className="group relative shrink-0 w-24 aspect-[4/3]"
                     >
-                      {/* The Thumbnail Button */}
                       <button
+                        type="button"
                         onClick={() => setActiveImage(i)}
-                        className={`w-full h-full overflow-hidden border-2 transition-colors ${
+                        className={`relative w-full h-full overflow-hidden rounded-lg border-2 transition-all ${
                           activeImage === i
-                            ? "border-gold"
-                            : "border-transparent opacity-50 hover:opacity-80"
+                            ? "border-gold ring-1 ring-gold/30"
+                            : "border-transparent opacity-50 hover:opacity-90"
                         }`}
                       >
                         <Image
@@ -299,19 +406,20 @@ export default function CarDetailPage() {
                           alt={`${car.name} thumbnail ${i + 1}`}
                           fill
                           className="object-cover"
-                          sizes="120px"
+                          sizes="96px"
                         />
                       </button>
-
                       <button
+                        type="button"
                         onClick={(e) => {
-                          e.stopPropagation(); // Prevents triggering the thumbnail click
-                          handleDeleteImage(img.id); // Call your delete function
+                          e.stopPropagation();
+                          setDeleteImageId(img.id);
                         }}
-                        className="absolute transition-opacity opacity-0 top-1 right-1 bg-black/50 p-1 rounded-full hover:bg-red-600 group-hover:opacity-100"
-                        title="Delete Image"
+                        className={`absolute top-1 right-1 opacity-0 group-hover:opacity-100 ${galleryDeleteClass}`}
+                        title="Delete image"
+                        aria-label="Delete image"
                       >
-                        <Trash2 className="w-4 h-4 text-white" />
+                        <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </div>
                   ))}
@@ -319,76 +427,77 @@ export default function CarDetailPage() {
               )}
             </div>
 
-            {/* ── Info ── */}
-            <div className="space-y-6">
-              {/* Header */}
-              <div>
+            {/* Info */}
+            <div className="space-y-6 lg:sticky lg:top-24">
+              <div className="space-y-4">
                 <div
-                  className={`flex items-center gap-2 mb-2 flex-wrap${isRTL ? " flex-row-reverse" : ""}`}
+                  className={`flex items-center gap-2 flex-wrap${isRTL ? " flex-row-reverse" : ""}`}
                 >
                   <Badge variant="gold">{categoryLabel}</Badge>
                   <Badge variant={car.available ? "available" : "unavailable"}>
                     {car.available ? t("available") : t("unavailable")}
                   </Badge>
+                  {car.featured && (
+                    <Badge variant="gold" className="gap-1">
+                      <Sparkles className="h-3 w-3" />
+                      {locale === "ar" ? "مميزة" : "Featured"}
+                    </Badge>
+                  )}
                 </div>
-                <p className="text-xs tracking-[0.3em] uppercase text-cream/40 mb-1">
-                  {car.brand}
-                </p>
-                <h1 className="font-playfair text-3xl sm:text-4xl font-bold text-cream">
-                  {car.name}
-                </h1>
-              </div>
 
-              {/* Price */}
-              <div className="border-t border-b border-luxury-border/30 py-4">
-                <div
-                  className={`flex items-baseline gap-2${isRTL ? " flex-row-reverse" : ""}`}
-                >
-                  <span className="font-playfair text-4xl font-bold text-gold">
-                    {formatPrice(car.pricePerDay, locale)}
-                  </span>
-                  <span className="text-sm text-cream/40 tracking-wide">
-                    {t("pricePerDay")}
-                  </span>
+                <div>
+                  <p className="text-xs tracking-[0.3em] uppercase text-gold/70 mb-1">
+                    {car.brand}
+                  </p>
+                  <h1 className="font-playfair text-3xl sm:text-4xl font-bold text-cream leading-tight">
+                    {car.name}
+                  </h1>
                 </div>
               </div>
 
-              {/* Description */}
               {car.description && (
-                <p className="text-cream/50 text-sm leading-relaxed">
-                  {car.description}
-                </p>
+                <div className="card-glass p-5 space-y-2">
+                  <p className="text-[10px] uppercase tracking-[0.25em] text-gold">
+                    {locale === "ar" ? "نبذة" : "Overview"}
+                  </p>
+                  <p className="text-cream/55 text-sm leading-relaxed">
+                    {car.description}
+                  </p>
+                </div>
               )}
 
-              {/* Specs */}
               <div className="space-y-3">
-                <h2 className="text-xs tracking-[0.3em] uppercase text-gold font-semibold">
+                <h2 className="text-[10px] tracking-[0.25em] uppercase text-gold font-semibold">
                   {t("specs")}
                 </h2>
                 <div className="grid grid-cols-2 gap-3">
-                  {[
-                    { label: t("engine"), value: car.specs.engine },
-                    { label: t("power"), value: car.specs.power },
-                    { label: t("seats"), value: String(car.specs.seats) },
-                    { label: t("transmission"), value: car.specs.transmission },
-                  ].map((spec) => (
-                    <div
-                      key={spec.label}
-                      className={`bg-luxury-gray p-3 space-y-1${isRTL ? " text-right" : ""}`}
-                    >
-                      <p className="text-[10px] tracking-widest uppercase text-cream/30">
-                        {spec.label}
-                      </p>
-                      <p className="text-sm font-medium text-cream">
-                        {spec.value}
-                      </p>
-                    </div>
-                  ))}
+                  {specItems.map((spec) => {
+                    const Icon = spec.icon;
+                    return (
+                      <div
+                        key={spec.label}
+                        className={`card-glass p-4 space-y-2${isRTL ? " text-right" : ""}`}
+                      >
+                        <div
+                          className={`flex items-center gap-1.5 text-gold/70${isRTL ? " flex-row-reverse" : ""}`}
+                        >
+                          <Icon className="h-3.5 w-3.5 shrink-0" />
+                          <p className="text-[10px] tracking-widest uppercase text-cream/35">
+                            {spec.label}
+                          </p>
+                        </div>
+                        <p className="text-sm font-medium text-cream">
+                          {spec.value}
+                        </p>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 
-              {/* CTA */}
-              <div className={`flex gap-3${isRTL ? " flex-row-reverse" : ""}`}>
+              <div
+                className={`flex gap-3 pt-2${isRTL ? " flex-row-reverse" : ""}`}
+              >
                 <Link href={`/booking?car=${car.id}`} className="flex-1">
                   <Button
                     variant="gold"
@@ -413,11 +522,6 @@ export default function CarDetailPage() {
           </div>
         </div>
       </section>
-      <Modal
-        isOpen={openUpload}
-        onClose={() => setOpenUpload(false)}
-        content={uploadImages()}
-      />
     </>
   );
 }

@@ -12,7 +12,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { formatPrice } from '@/lib/utils';
 import { CATEGORY_LABELS } from '@/types';
 import { Plus, Pencil, Trash2, LogOut, Lock, X } from 'lucide-react';
 import Image from 'next/image';
@@ -23,7 +22,6 @@ type CarFormData = {
   name: string;
   brand: string;
   category: CarCategory;
-  pricePerDay: string;
   imageUrl: string;
   engine: string;
   power: string;
@@ -37,7 +35,6 @@ const emptyForm: CarFormData = {
   name: '',
   brand: '',
   category: 'supercar',
-  pricePerDay: '',
   imageUrl: '',
   engine: '',
   power: '',
@@ -95,7 +92,6 @@ export default function AdminPage() {
       name: car.name,
       brand: car.brand,
       category: car.category,
-      pricePerDay: String(car.pricePerDay),
       imageUrl: car.images[0] || '',
       engine: car.specs.engine,
       power: car.specs.power,
@@ -115,7 +111,6 @@ export default function AdminPage() {
       name: form.name,
       brand: form.brand,
       category: form.category,
-      pricePerDay: Number(form.pricePerDay),
       images: [form.imageUrl],
       specs: {
         engine: form.engine,
@@ -229,7 +224,7 @@ export default function AdminPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-luxury-border/30">
-                    {[t('tableImage'), 'Name', t('category'), t('tablePrice'), t('tableStatus'), t('actions')].map(
+                    {[t('tableImage'), 'Name', t('category'), t('tableStatus'), t('actions')].map(
                       (h) => (
                         <th
                           key={h}
@@ -271,10 +266,6 @@ export default function AdminPage() {
                         <Badge variant="gold" className="text-[10px]">
                           {CATEGORY_LABELS[car.category][locale as 'en' | 'ar']}
                         </Badge>
-                      </td>
-                      {/* Price */}
-                      <td className={`py-3 px-3 font-playfair text-gold${isRTL ? ' text-right' : ''}`}>
-                        {formatPrice(car.pricePerDay, locale)}
                       </td>
                       {/* Status */}
                       <td className="py-3 px-3">
@@ -339,7 +330,7 @@ export default function AdminPage() {
             </div>
 
             {/* Modal Form */}
-            <form onSubmit={handleSave} className="px-6 py-5 space-y-4 max-h-[70vh] overflow-y-auto">
+            <form onSubmit={handleSave} className="form-scroll px-6 py-5 space-y-4 max-h-[70vh]">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <label className="block text-xs tracking-wider uppercase text-cream/50">{t('name')} *</label>
@@ -359,30 +350,18 @@ export default function AdminPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="block text-xs tracking-wider uppercase text-cream/50">{t('category')} *</label>
-                  <select
-                    value={form.category}
-                    onChange={(e) => setForm((p) => ({ ...p, category: e.target.value as CarCategory }))}
-                    className="flex h-10 w-full bg-luxury-gray border border-luxury-border px-3 py-2 text-sm text-cream focus:outline-none focus:border-gold rounded-none"
-                  >
-                    <option value="supercar">Supercar</option>
-                    <option value="luxury_sedan">Luxury Sedan</option>
-                    <option value="sports">Sports</option>
-                    <option value="premium_suv">Premium SUV</option>
-                  </select>
-                </div>
-                <div className="space-y-1.5">
-                  <label className="block text-xs tracking-wider uppercase text-cream/50">{t('price')} *</label>
-                  <Input
-                    type="number"
-                    value={form.pricePerDay}
-                    onChange={(e) => setForm((p) => ({ ...p, pricePerDay: e.target.value }))}
-                    placeholder="15000"
-                    required
-                  />
-                </div>
+              <div className="space-y-1.5">
+                <label className="block text-xs tracking-wider uppercase text-cream/50">{t('category')} *</label>
+                <select
+                  value={form.category}
+                  onChange={(e) => setForm((p) => ({ ...p, category: e.target.value as CarCategory }))}
+                  className="flex h-10 w-full bg-luxury-gray border border-luxury-border px-3 py-2 text-sm text-cream focus:outline-none focus:border-gold rounded-none"
+                >
+                  <option value="supercar">Supercar</option>
+                  <option value="luxury_sedan">Luxury Sedan</option>
+                  <option value="sports">Sports</option>
+                  <option value="premium_suv">Premium SUV</option>
+                </select>
               </div>
 
               <div className="space-y-1.5">

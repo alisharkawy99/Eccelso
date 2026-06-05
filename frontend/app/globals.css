@@ -93,6 +93,16 @@ body {
   transition: background 0.3s ease, color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
 }
 
+/* Scrollable forms without visible scrollbar */
+.form-scroll {
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.form-scroll::-webkit-scrollbar {
+  display: none;
+}
+
 /* Modal */
 .modal-panel {
   background: rgba(14, 14, 14, 0.98);

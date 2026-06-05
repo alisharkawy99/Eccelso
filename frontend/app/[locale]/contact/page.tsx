@@ -172,7 +172,7 @@ export default function ContactPage() {
                   </button>
                 </div>
               ) : (
-                <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+                <form onSubmit={handleSubmit} className="form-scroll space-y-4 max-h-[70vh]" noValidate>
                   <FormField label={t('formName')} error={errors.name} required>
                     <Input
                       name="name"

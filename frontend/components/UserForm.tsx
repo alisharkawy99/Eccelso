@@ -51,7 +51,8 @@ export default function UserAuthForm({ onClose }: UserAuthFormProps) {
     address: "",
   });
 
-  const fieldClass = "bg-luxury-black/50 border-luxury-border text-cream focus:border-gold outline-none";
+  const fieldClass =
+    "bg-luxury-black/50 border-luxury-border text-cream focus:border-gold outline-none";
 
   const clearFieldError = (name: string) => {
     setErrors((prev) => {
@@ -112,7 +113,8 @@ export default function UserAuthForm({ onClose }: UserAuthFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const validationErrors = step === "login" ? validateLogin() : validateRegister();
+    const validationErrors =
+      step === "login" ? validateLogin() : validateRegister();
     setErrors(validationErrors);
     if (hasErrors(validationErrors)) return;
 
@@ -146,9 +148,13 @@ export default function UserAuthForm({ onClose }: UserAuthFormProps) {
         }
         if (avatar) formDataToSend.append("avatar", avatar);
 
-        const response = await apiClient.post("/auth/register", formDataToSend, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
+        const response = await apiClient.post(
+          "/auth/register",
+          formDataToSend,
+          {
+            headers: { "Content-Type": "multipart/form-data" },
+          },
+        );
         if (response.data.message) {
           setStep("login");
           setError("");
@@ -156,7 +162,9 @@ export default function UserAuthForm({ onClose }: UserAuthFormProps) {
         }
       }
     } catch (err: unknown) {
-      const apiError = err as { response?: { status?: number; data?: { detail?: string } } };
+      const apiError = err as {
+        response?: { status?: number; data?: { detail?: string } };
+      };
       if (apiError.response?.status === 404 && step === "login") {
         setStep("register");
         setError("No account found. Complete your registration below.");
@@ -192,14 +200,19 @@ export default function UserAuthForm({ onClose }: UserAuthFormProps) {
           </p>
 
           <div className="mt-8 space-y-3">
-            {["Premium fleet access", "Priority booking", "Member-only offers"].map(
-              (item) => (
-                <div key={item} className="flex items-center gap-2 text-sm text-cream/60">
-                  <Sparkles className="h-4 w-4 shrink-0 text-gold/70" />
-                  {item}
-                </div>
-              ),
-            )}
+            {[
+              "Premium fleet access",
+              "Priority booking",
+              "Member-only offers",
+            ].map((item) => (
+              <div
+                key={item}
+                className="flex items-center gap-2 text-sm text-cream/60"
+              >
+                <Sparkles className="h-4 w-4 shrink-0 text-gold/70" />
+                {item}
+              </div>
+            ))}
           </div>
         </div>
 
@@ -252,8 +265,17 @@ export default function UserAuthForm({ onClose }: UserAuthFormProps) {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="flex flex-1 flex-col gap-4" noValidate>
-          <FormField label="Email" error={errors.email} required icon={<Mail className="h-3 w-3" />}>
+        <form
+          onSubmit={handleSubmit}
+          className="form-scroll flex flex-1 flex-col gap-4 max-h-[350px]"
+          noValidate
+        >
+          <FormField
+            label="Email"
+            error={errors.email}
+            required
+            icon={<Mail className="h-3 w-3" />}
+          >
             <Input
               name="email"
               type="email"
@@ -264,7 +286,12 @@ export default function UserAuthForm({ onClose }: UserAuthFormProps) {
             />
           </FormField>
 
-          <FormField label="Password" error={errors.password} required icon={<KeyRound className="h-3 w-3" />}>
+          <FormField
+            label="Password"
+            error={errors.password}
+            required
+            icon={<KeyRound className="h-3 w-3" />}
+          >
             <div className="relative">
               <Input
                 name="password"
@@ -272,7 +299,10 @@ export default function UserAuthForm({ onClose }: UserAuthFormProps) {
                 placeholder="••••••••"
                 value={formData.password}
                 onChange={handleChange}
-                className={inputErrorClass(!!errors.password, `${fieldClass} pe-10`)}
+                className={inputErrorClass(
+                  !!errors.password,
+                  `${fieldClass} pe-10`,
+                )}
               />
               <button
                 type="button"
@@ -321,8 +351,12 @@ export default function UserAuthForm({ onClose }: UserAuthFormProps) {
                     )}
                   </button>
                   <div className="flex-1">
-                    <p className="text-xs text-cream/50">Optional profile photo</p>
-                    <p className="text-[10px] text-cream/30">JPG, PNG up to 5MB</p>
+                    <p className="text-xs text-cream/50">
+                      Optional profile photo
+                    </p>
+                    <p className="text-[10px] text-cream/30">
+                      JPG, PNG up to 5MB
+                    </p>
                     {avatarPreview && (
                       <button
                         type="button"
@@ -337,7 +371,12 @@ export default function UserAuthForm({ onClose }: UserAuthFormProps) {
                 </div>
               </FormField>
 
-              <FormField label="Full Name" error={errors.name} required icon={<User className="h-3 w-3" />}>
+              <FormField
+                label="Full Name"
+                error={errors.name}
+                required
+                icon={<User className="h-3 w-3" />}
+              >
                 <Input
                   name="name"
                   placeholder="Your full name"
@@ -347,7 +386,12 @@ export default function UserAuthForm({ onClose }: UserAuthFormProps) {
                 />
               </FormField>
 
-              <FormField label="Mobile" error={errors.mobile} required icon={<Phone className="h-3 w-3" />}>
+              <FormField
+                label="Mobile"
+                error={errors.mobile}
+                required
+                icon={<Phone className="h-3 w-3" />}
+              >
                 <Input
                   name="mobile"
                   placeholder="+20 ..."

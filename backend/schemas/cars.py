@@ -1,16 +1,14 @@
-from calendar import c
 from enum import Enum
-from pickle import DICT
-from typing import Optional, List, Dict
+from typing import Optional, List
 from schemas.images import ImageResponse
 from pydantic import BaseModel, ConfigDict, Field
 from uuid import UUID
-from fastapi import Form, File, UploadFile, Depends
+from fastapi import Form, File, UploadFile
 
 
 class CarSpecs(BaseModel):
     engine: str
-    power: Optional[str] = None  # Now optional
+    power: Optional[str] = None
     seats: Optional[int] = None
     transmission: str
 
@@ -28,7 +26,6 @@ class CarResponse(BaseModel):
     name: str
     brand: str
     category: str
-    price_per_day: int = Field(..., serialization_alias="pricePerDay")
     images: List[ImageResponse]
     specs: CarSpecs
     available: bool
@@ -37,12 +34,10 @@ class CarResponse(BaseModel):
 
 
 class CarCreate(BaseModel):
-    #  FIXED: Cleaned up the double assignment typo here
     model_config = ConfigDict(from_attributes=True, populate_by_name=True)
     name: str
     brand: str
     category: str
-    price_per_day: int = Field(..., alias="pricePerDay")
     images: list[ImageResponse]
     specs: CarSpecs
     available: bool = True
@@ -56,7 +51,6 @@ class EditCar(BaseModel):
     name: Optional[str] = None
     brand: Optional[str] = None
     category: Optional[str] = None
-    price_per_day: Optional[int] = Field(None, alias="pricePerDay")
     images: Optional[List[ImageResponse]] = None
     specs: Optional[CarSpecs] = None
     available: Optional[bool] = None
@@ -70,8 +64,7 @@ class CarFormDependency:
         name: str = Form(None),
         brand: str = Form(None),
         category: str = Form(None),
-        pricePerDay: int = Form(None),
-        specs: str = Form(None),  # This will be a JSON string
+        specs: str = Form(None),
         description: str = Form(None),
         available: bool = Form(True),
         featured: bool = Form(True),
@@ -80,7 +73,6 @@ class CarFormDependency:
         self.name = name
         self.brand = brand
         self.category = category
-        self.pricePerDay = pricePerDay
         self.specs = specs
         self.description = description
         self.available = available
