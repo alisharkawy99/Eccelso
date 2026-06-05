@@ -4,7 +4,6 @@ import Image from "next/image";
 import { useTranslations, useLocale } from "next-intl";
 import { Link } from "@/navigation";
 import { Car } from "@/types";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CATEGORY_LABELS } from "@/types";
 import { useState } from "react";
@@ -27,9 +26,6 @@ interface ICarCardProps {
   isDeleting?: boolean;
 }
 
-const actionIconClass =
-  "flex h-9 w-9 items-center justify-center rounded-xl border border-luxury-border/60 bg-luxury-gray/40 text-cream/55 transition-all duration-200 hover:border-gold/40 hover:bg-gold/10 hover:text-gold hover:shadow-[0_0_12px_rgba(201,168,76,0.15)]";
-
 export default function CarCard({
   car,
   isAdmin = false,
@@ -41,6 +37,21 @@ export default function CarCard({
   const [openModal, setOpenModal] = useState(false);
   const [deleteCar, setDeleteCar] = useState(false);
   const categoryLabel = CATEGORY_LABELS[car.category][locale as "en" | "ar"];
+
+  const specs = [
+    { icon: Zap, label: locale === "ar" ? "القوة" : "Power", value: car.specs.power || "—" },
+    {
+      icon: Users,
+      label: locale === "ar" ? "المقاعد" : "Seats",
+      value: String(car.specs.seats ?? "—"),
+    },
+    { icon: Cog, label: locale === "ar" ? "المحرك" : "Engine", value: car.specs.engine },
+    {
+      icon: Settings2,
+      label: locale === "ar" ? "ناقل الحركة" : "Trans.",
+      value: car.specs.transmission,
+    },
+  ];
 
   const deleteConfirmation = () => (
     <div className="space-y-4">
@@ -77,7 +88,7 @@ export default function CarCard({
   );
 
   return (
-    <div className="card-glass group overflow-hidden flex flex-col">
+    <article className="card-glass group flex flex-col overflow-hidden rounded-2xl">
       <Modal
         isOpen={deleteCar}
         onClose={() => setDeleteCar(false)}
@@ -88,7 +99,10 @@ export default function CarCard({
         size="sm"
       />
 
-      <div className="relative h-52 overflow-hidden bg-luxury-gray">
+      <Link
+        href={`/fleet/${car.id}`}
+        className="relative block aspect-[16/10] overflow-hidden bg-luxury-gray"
+      >
         <Image
           src={car.images?.[0]?.url ?? ""}
           alt={car.name}
@@ -96,99 +110,108 @@ export default function CarCard({
           className="object-cover transition-transform duration-700 group-hover:scale-105"
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-luxury-black/80 via-transparent to-transparent" />
 
-        <div className="absolute top-3 left-3 rtl:left-auto rtl:right-3 flex flex-wrap gap-2">
-          {car.featured && (
-            <Badge variant="gold" className="gap-1">
-              <Sparkles className="h-3 w-3" />
-              {locale === "ar" ? "مميزة" : "Featured"}
-            </Badge>
-          )}
+        <div className="absolute inset-0 bg-gradient-to-t from-luxury-black via-luxury-black/40 to-transparent" />
+
+        {/* Meta row */}
+        <div className="absolute top-0 inset-x-0 flex items-center justify-between gap-2 p-3">
+          <div className="flex items-center gap-2">
+            {car.featured && (
+              <span className="inline-flex items-center gap-1 rounded-md bg-gold px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-luxury-black">
+                <Sparkles className="h-3 w-3" />
+                {locale === "ar" ? "مميزة" : "Featured"}
+              </span>
+            )}
+          </div>
+          <span className="rounded-md bg-black/50 px-2.5 py-1 text-[10px] font-medium uppercase tracking-wider text-cream/90 backdrop-blur-sm">
+            {categoryLabel}
+          </span>
         </div>
 
-        <div className="absolute bottom-3 left-3 rtl:left-auto rtl:right-3 flex flex-wrap gap-2">
-          <Badge variant="gold">{categoryLabel}</Badge>
-          <Badge variant={car.available ? "available" : "unavailable"}>
-            {car.available ? t("available") : t("unavailable")}
-          </Badge>
-        </div>
-      </div>
-
-      <div className="p-5 flex flex-col flex-1 gap-4">
-        <div>
-          <h3 className="font-playfair text-lg font-semibold text-cream leading-tight">
-            {car.name}
-          </h3>
-          <p className="text-xs text-cream/40 tracking-widest uppercase mt-0.5">
+        {/* Title on image */}
+        <div className="absolute bottom-0 inset-x-0 p-4">
+          <p className="text-[10px] uppercase tracking-[0.25em] text-gold/80">
             {car.brand}
           </p>
-        </div>
-
-        <div className="grid grid-cols-2 gap-2.5">
-          <div className="flex items-center gap-1.5 text-xs text-cream/50">
-            <Zap className="h-3.5 w-3.5 shrink-0 text-gold/70" />
-            <span className="truncate">{car.specs.power || "—"}</span>
-          </div>
-          <div className="flex items-center gap-1.5 text-xs text-cream/50">
-            <Users className="h-3.5 w-3.5 shrink-0 text-gold/70" />
-            <span>
-              {car.specs.seats ?? "—"}{" "}
-              {locale === "ar" ? "مقاعد" : "seats"}
+          <h3 className="mt-0.5 font-playfair text-xl font-bold leading-tight text-cream sm:text-2xl">
+            {car.name}
+          </h3>
+          <div className="mt-2 flex items-center gap-2">
+            <span
+              className={`inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider ${
+                car.available ? "text-emerald-400" : "text-red-400"
+              }`}
+            >
+              <span
+                className={`h-1.5 w-1.5 rounded-full ${
+                  car.available ? "bg-emerald-400" : "bg-red-400"
+                }`}
+              />
+              {car.available ? t("available") : t("unavailable")}
             </span>
           </div>
-          <div className="flex items-center gap-1.5 text-xs text-cream/50 col-span-2">
-            <Cog className="h-3.5 w-3.5 shrink-0 text-gold/70" />
-            <span className="truncate">{car.specs.engine}</span>
-          </div>
-          <div className="flex items-center gap-1.5 text-xs text-cream/50 col-span-2">
-            <Settings2 className="h-3.5 w-3.5 shrink-0 text-gold/70" />
-            <span className="truncate">{car.specs.transmission}</span>
-          </div>
+        </div>
+      </Link>
+
+      {/* Specs + actions */}
+      <div className="flex flex-1 flex-col p-4 sm:p-5">
+        <div className="grid grid-cols-4 divide-x divide-luxury-border/30 rounded-xl border border-luxury-border/20 bg-luxury-black/30">
+          {specs.map(({ icon: Icon, label, value }) => (
+            <div
+              key={label}
+              className="flex flex-col items-center gap-1 px-1 py-3 text-center first:rounded-s-xl last:rounded-e-xl"
+            >
+              <Icon className="h-3.5 w-3.5 text-gold/50" />
+              <span className="text-[9px] uppercase tracking-wider text-cream/30">
+                {label}
+              </span>
+              <span className="w-full truncate px-1 text-[11px] font-medium text-cream/70">
+                {value}
+              </span>
+            </div>
+          ))}
         </div>
 
         {car.description && (
-          <p className="text-xs text-cream/35 line-clamp-2 leading-relaxed">
+          <p className="mt-3 line-clamp-2 text-xs leading-relaxed text-cream/35">
             {car.description}
           </p>
         )}
 
-        <div className="flex-1" />
-
-        <div className="flex items-center justify-between gap-3 pt-3 border-t border-luxury-border/30">
-          <Link href={`/fleet/${car.id}`}>
+        <div className="mt-4 flex items-center gap-2">
+          <Link href={`/fleet/${car.id}`} className="flex-1">
             <Button
-              variant="outline"
+              variant={car.available ? "gold" : "outline"}
               size="sm"
-              className={!car.available ? "opacity-50 cursor-not-allowed" : ""}
+              className={`w-full text-xs tracking-widest uppercase ${
+                !car.available ? "opacity-50 pointer-events-none" : ""
+              }`}
             >
               {t("viewDetails")}
             </Button>
           </Link>
 
           {isAdmin && (
-            <div className="flex items-center gap-2">
+            <>
               <button
                 type="button"
                 onClick={() => setOpenModal(true)}
-                className={actionIconClass}
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-luxury-border/40 text-cream/45 transition-colors hover:border-gold/40 hover:text-gold"
                 aria-label="Edit vehicle"
-                title="Edit vehicle"
               >
                 <Pencil className="h-4 w-4" />
               </button>
               {onDelete && (
                 <button
                   type="button"
-                  className={`${actionIconClass} hover:border-red-500/40 hover:bg-red-500/10 hover:text-red-400 hover:shadow-[0_0_12px_rgba(239,68,68,0.12)]`}
                   onClick={() => setDeleteCar(true)}
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-luxury-border/40 text-cream/45 transition-colors hover:border-red-500/40 hover:text-red-400"
                   aria-label="Delete vehicle"
-                  title="Delete vehicle"
                 >
                   <Trash2 className="h-4 w-4" />
                 </button>
               )}
-            </div>
+            </>
           )}
         </div>
       </div>
@@ -204,6 +227,6 @@ export default function CarCard({
           <CarForm onClose={() => setOpenModal(false)} initialData={car} />
         }
       />
-    </div>
+    </article>
   );
 }

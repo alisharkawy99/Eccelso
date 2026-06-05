@@ -11,14 +11,19 @@ import { useAuth } from "@/app/hooks/useAuth";
 import CarForm from "@/components/CarForm";
 import Modal from "@/components/Modal";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, LayoutGrid, Zap, Crown, Flag, Mountain } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
-const FILTERS: { key: "all" | CarCategory; labelKey: string }[] = [
-  { key: "all", labelKey: "filterAll" },
-  { key: "supercar", labelKey: "filterSupercar" },
-  { key: "luxury_sedan", labelKey: "filterLuxurySedan" },
-  { key: "sports", labelKey: "filterSports" },
-  { key: "premium_suv", labelKey: "filterPremiumSuv" },
+const FILTERS: {
+  key: "all" | CarCategory;
+  labelKey: string;
+  icon: LucideIcon;
+}[] = [
+  { key: "all", labelKey: "filterAll", icon: LayoutGrid },
+  { key: "supercar", labelKey: "filterSupercar", icon: Zap },
+  { key: "luxury_sedan", labelKey: "filterLuxurySedan", icon: Crown },
+  { key: "sports", labelKey: "filterSports", icon: Flag },
+  { key: "premium_suv", labelKey: "filterPremiumSuv", icon: Mountain },
 ];
 
 // ... keep your imports ...
@@ -64,59 +69,74 @@ export default function FleetPage() {
   return (
     <>
       {/* Filters */}
-      <section className="bg-luxury-black border-b border-luxury-border/20 sticky top-16 z-30 backdrop-blur-md">
+      <section className="bg-luxury-black/95 border-b border-luxury-border/20 sticky top-16 z-30 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div
-            className={`flex items-center gap-4 overflow-x-auto pb-1${isRTL ? " flex-row-reverse" : ""}`}
+            className={`flex flex-wrap items-center gap-3 sm:gap-4${isRTL ? " flex-row-reverse" : ""}`}
           >
-            {/* Category filters */}
             <div
-              className={`flex items-center gap-2 flex-shrink-0${isRTL ? " flex-row-reverse" : ""}`}
+              className={`inline-flex items-center gap-1 rounded-2xl border border-luxury-border/25 bg-luxury-gray/20 p-1 backdrop-blur-sm overflow-x-auto max-w-full${isRTL ? " flex-row-reverse" : ""}`}
             >
-              {FILTERS.map(({ key, labelKey }) => (
-                <button
-                  key={key}
-                  onClick={() => setActiveFilter(key)}
-                  className={`px-4 py-1.5 text-xs tracking-widest uppercase border transition-all duration-200 flex-shrink-0 ${
-                    activeFilter === key
-                      ? "border-gold bg-gold/10 text-gold"
-                      : "border-luxury-border text-cream/40 hover:border-gold/40 hover:text-cream/70"
-                  }`}
-                >
-                  {t(labelKey as keyof typeof t)}
-                </button>
-              ))}
+              {FILTERS.map(({ key, labelKey, icon: Icon }) => {
+                const isActive = activeFilter === key;
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setActiveFilter(key)}
+                    className={`group inline-flex shrink-0 items-center gap-2 rounded-xl px-3.5 py-2 text-[11px] font-semibold tracking-wider uppercase transition-all duration-300 ${
+                      isActive
+                        ? "bg-gradient-to-br from-gold/25 via-gold/10 to-transparent border border-gold/40 text-gold shadow-[0_0_24px_rgba(201,168,76,0.12)]"
+                        : "border border-transparent text-cream/40 hover:border-luxury-border/40 hover:bg-luxury-gray/40 hover:text-cream/75"
+                    }`}
+                  >
+                    <Icon
+                      className={`h-3.5 w-3.5 transition-colors ${
+                        isActive
+                          ? "text-gold"
+                          : "text-cream/30 group-hover:text-gold/60"
+                      }`}
+                    />
+                    {t(labelKey as keyof typeof t)}
+                  </button>
+                );
+              })}
             </div>
 
-            <div className="h-4 w-px bg-luxury-border/50 flex-shrink-0 hidden sm:block" />
-
-            {/* Available only toggle */}
-            <label
-              className={`flex items-center gap-2 flex-shrink-0 cursor-pointer${isRTL ? " flex-row-reverse" : ""}`}
+            <button
+              type="button"
+              onClick={() => setAvailableOnly(!availableOnly)}
+              className={`inline-flex shrink-0 items-center gap-2.5 rounded-xl border px-3.5 py-2 transition-all duration-300${isRTL ? " flex-row-reverse" : ""} ${
+                availableOnly
+                  ? "border-emerald-500/35 bg-emerald-500/10 text-emerald-400"
+                  : "border-luxury-border/25 bg-luxury-gray/20 text-cream/45 hover:border-luxury-border/50 hover:text-cream/65"
+              }`}
             >
-              <div
-                onClick={() => setAvailableOnly(!availableOnly)}
-                className={`w-9 h-5 rounded-full border transition-all duration-200 relative cursor-pointer ${
+              <span
+                className={`relative flex h-4 w-7 items-center rounded-full border transition-all duration-300 ${
                   availableOnly
-                    ? "bg-gold/20 border-gold"
-                    : "bg-luxury-gray border-luxury-border"
+                    ? "border-emerald-500/50 bg-emerald-500/20"
+                    : "border-luxury-border bg-luxury-gray"
                 }`}
               >
-                <div
-                  className={`w-3 h-3 rounded-full bg-gold absolute top-0.5 transition-all duration-200 ${
-                    availableOnly ? "left-5" : "left-1"
+                <span
+                  className={`absolute h-2.5 w-2.5 rounded-full transition-all duration-300 ${
+                    availableOnly
+                      ? "start-3.5 bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]"
+                      : "start-0.5 bg-cream/30"
                   }`}
                 />
-              </div>
-              <span className="text-xs tracking-wider text-cream/50">
+              </span>
+              <span className="text-[11px] font-semibold tracking-wider uppercase whitespace-nowrap">
                 {locale === "ar" ? "المتاحة فقط" : "Available Only"}
               </span>
-            </label>
+            </button>
+
             {isAdmin && (
               <Button
                 variant="gold"
                 size="sm"
-                className="ms-auto gap-2 text-xs tracking-widest uppercase"
+                className="ms-auto gap-2 text-xs tracking-widest uppercase shrink-0"
                 onClick={() => setOpenModal(true)}
               >
                 <Plus className="h-4 w-4" />

@@ -92,10 +92,14 @@ export default function CarDetailPage() {
     const thumb = strip.querySelector<HTMLElement>(
       `[data-thumb-index="${activeImage}"]`,
     );
-    thumb?.scrollIntoView({
+    if (!thumb) return;
+
+    const thumbLeft = thumb.offsetLeft;
+    const thumbWidth = thumb.offsetWidth;
+    const stripWidth = strip.clientWidth;
+    strip.scrollTo({
+      left: thumbLeft - stripWidth / 2 + thumbWidth / 2,
       behavior: "smooth",
-      block: "nearest",
-      inline: "center",
     });
   }, [activeImage]);
 
@@ -136,7 +140,7 @@ export default function CarDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-luxury-black pt-24 pb-16">
+      <div className="min-h-screen overflow-x-hidden bg-luxury-black pt-24 pb-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 animate-pulse">
           <div className="h-4 w-32 bg-luxury-gray rounded mb-8" />
           <div className="grid grid-cols-1 lg:grid-cols-[1.45fr_1fr] gap-10">
@@ -333,7 +337,7 @@ export default function CarDetailPage() {
         }
       />
 
-      <div className="min-h-screen bg-luxury-black pt-24 pb-16">
+      <div className="min-h-screen overflow-x-hidden bg-luxury-black pt-24 pb-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <Link
             href="/fleet"
@@ -349,7 +353,7 @@ export default function CarDetailPage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-[1.45fr_1fr] gap-10 lg:gap-14 items-start">
             {/* Gallery */}
-            <div className="space-y-4">
+            <div className="min-w-0 space-y-4">
               <div className="relative aspect-[4/3] sm:aspect-[3/2] overflow-hidden rounded-2xl border border-luxury-border/30 bg-luxury-gray shadow-[0_24px_48px_-12px_rgba(0,0,0,0.55)]">
                 <Image
                   src={car.images[activeImage].url}
@@ -422,31 +426,31 @@ export default function CarDetailPage() {
               </div>
 
               {car.images.length > 1 && (
-                <div className="relative">
+                <div className="relative overflow-hidden rounded-xl">
                   <div
-                    className={`pointer-events-none absolute inset-y-0 z-10 w-10 bg-gradient-to-r from-luxury-black to-transparent${isRTL ? " right-0 rotate-180" : " left-0"}`}
+                    className={`pointer-events-none absolute inset-y-0 z-10 w-8 bg-gradient-to-r from-luxury-black to-transparent${isRTL ? " right-0 rotate-180" : " left-0"}`}
                   />
                   <div
-                    className={`pointer-events-none absolute inset-y-0 z-10 w-10 bg-gradient-to-l from-luxury-black to-transparent${isRTL ? " left-0 rotate-180" : " right-0"}`}
+                    className={`pointer-events-none absolute inset-y-0 z-10 w-8 bg-gradient-to-l from-luxury-black to-transparent${isRTL ? " left-0 rotate-180" : " right-0"}`}
                   />
 
                   <div
                     ref={thumbStripRef}
-                    className={`flex gap-3 overflow-x-auto scroll-smooth snap-x snap-mandatory px-1 py-2 rounded-xl border border-luxury-border/20 bg-luxury-gray/15 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden${isRTL ? " flex-row-reverse" : ""}`}
+                    className={`flex gap-2.5 overflow-x-auto scroll-smooth snap-x snap-mandatory py-2 px-1 rounded-xl border border-luxury-border/20 bg-luxury-gray/15 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden${isRTL ? " flex-row-reverse" : ""}`}
                   >
                     {car.images.map((img, i) => (
                       <div
                         key={img.id}
                         data-thumb-index={i}
-                        className="group relative shrink-0 snap-center w-28 sm:w-32 aspect-[4/3]"
+                        className="group relative shrink-0 snap-center w-24 sm:w-28 aspect-[4/3]"
                       >
                         <button
                           type="button"
                           onClick={() => setActiveImage(i)}
-                          className={`relative w-full h-full overflow-hidden rounded-xl transition-all duration-200 ${
+                          className={`relative w-full h-full overflow-hidden rounded-lg transition-all duration-200 ${
                             activeImage === i
-                              ? "ring-2 ring-gold ring-offset-2 ring-offset-luxury-black opacity-100 shadow-[0_0_20px_rgba(212,175,55,0.15)]"
-                              : "ring-1 ring-luxury-border/30 opacity-50 hover:opacity-85 hover:ring-gold/35"
+                              ? "border-2 border-gold opacity-100 shadow-[0_0_16px_rgba(212,175,55,0.2)]"
+                              : "border border-luxury-border/30 opacity-55 hover:opacity-90 hover:border-gold/40"
                           }`}
                         >
                           <Image
@@ -474,8 +478,8 @@ export default function CarDetailPage() {
               )}
             </div>
 
-            {/* Details — same view, no extra sections */}
-            <div className={`space-y-6${isRTL ? " text-right" : ""}`}>
+            {/* Details */}
+            <div className={`min-w-0 space-y-6${isRTL ? " text-right" : ""}`}>
               <div
                 className={`flex flex-wrap items-center gap-2${isRTL ? " flex-row-reverse" : ""}`}
               >
