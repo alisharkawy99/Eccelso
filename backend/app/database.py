@@ -1,14 +1,30 @@
+from urllib.parse import parse_qs, urlparse, urlunparse
+
 from app.config import settings
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import declarative_base
 from typing import Annotated
 from fastapi import Depends
 
 Base = declarative_base()
 
-async_engine = create_async_engine(
-    settings.database_url.replace("postgresql://", "postgresql+asyncpg://")
-)
+
+def _build_async_engine_url(database_url: str) -> tuple[str, dict]:
+    url = database_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+    parsed = urlparse(url)
+    query = parse_qs(parsed.query)
+
+    connect_args: dict = {}
+    sslmode = query.get("sslmode", [None])[0]
+    if sslmode in ("require", "verify-full", "verify-ca"):
+        connect_args["ssl"] = True
+
+    clean_url = urlunparse(parsed._replace(query=""))
+    return clean_url, connect_args
+
+
+_engine_url, _connect_args = _build_async_engine_url(settings.database_url)
+async_engine = create_async_engine(_engine_url, connect_args=_connect_args)
 
 
 async def get_db():
