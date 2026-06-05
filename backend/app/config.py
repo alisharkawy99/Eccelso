@@ -4,6 +4,8 @@ import cloudinary
 
 class Settings(BaseSettings):
     database_url: str
+    host: str = "0.0.0.0"
+    port: int = 8000
     # Cloudinary settings
     cloudinary_cloud_name: str
     cloudinary_api_key: str

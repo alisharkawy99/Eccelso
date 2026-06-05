@@ -8,6 +8,16 @@ import { getCars, submitBooking } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { formatPrice, calculateDays, getTodayISO, getTomorrowISO } from '@/lib/utils';
+import { FormField } from '@/components/ui/FormField';
+import {
+  FieldErrors,
+  hasErrors,
+  inputErrorClass,
+  validateDateRange,
+  validateName,
+  validatePhone,
+  validateRequired,
+} from '@/lib/validation';
 import { CheckCircle, Car as CarIcon } from 'lucide-react';
 
 export default function BookingPage() {
@@ -20,6 +30,7 @@ export default function BookingPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [errors, setErrors] = useState<FieldErrors>({});
 
   const [form, setForm] = useState({
     carId: searchParams.get('car') || '',
@@ -44,12 +55,37 @@ export default function BookingPage() {
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+    setErrors((prev) => {
+      const next = { ...prev };
+      delete next[name];
+      if (name === 'startDate' || name === 'endDate') {
+        delete next.startDate;
+        delete next.endDate;
+      }
+      return next;
+    });
+  };
+
+  const validateBooking = (): FieldErrors => {
+    const next: FieldErrors = {};
+    const carError = validateRequired(form.carId, 'Car selection');
+    const nameError = validateName(form.customerName);
+    const phoneError = validatePhone(form.phone);
+    const dateErrors = validateDateRange(form.startDate, form.endDate);
+
+    if (carError) next.carId = carError;
+    if (nameError) next.customerName = nameError;
+    if (phoneError) next.phone = phoneError;
+    return { ...next, ...dateErrors };
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.carId || !form.startDate || !form.endDate || !form.customerName || !form.phone) return;
+    const validationErrors = validateBooking();
+    setErrors(validationErrors);
+    if (hasErrors(validationErrors)) return;
     setSubmitting(true);
     await submitBooking(form);
     setSubmitting(false);
@@ -103,18 +139,16 @@ export default function BookingPage() {
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className={`grid grid-cols-1 lg:grid-cols-3 gap-8${isRTL ? ' lg:flex lg:flex-row-reverse' : ''}`}>
             {/* ── Form ── */}
-            <form onSubmit={handleSubmit} className="lg:col-span-2 space-y-6">
-              {/* Car selector */}
-              <div className="space-y-2">
-                <label className={`block text-xs tracking-widest uppercase text-cream/60${isRTL ? ' text-right' : ''}`}>
-                  {t('selectCar')} *
-                </label>
+            <form onSubmit={handleSubmit} className="lg:col-span-2 space-y-6" noValidate>
+              <FormField label={t('selectCar')} error={errors.carId} required>
                 <select
                   name="carId"
                   value={form.carId}
                   onChange={handleChange}
-                  required
-                  className="flex h-10 w-full bg-luxury-gray border border-luxury-border px-4 py-2 text-sm text-cream focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold/30 transition-colors rounded-none"
+                  className={inputErrorClass(
+                    !!errors.carId,
+                    'flex h-10 w-full rounded-xl bg-luxury-gray border border-luxury-border px-4 py-2 text-sm text-cream focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold/30 transition-colors',
+                  )}
                 >
                   <option value="">{loading ? '...' : t('selectCar')}</option>
                   {cars.map((car) => (
@@ -123,67 +157,53 @@ export default function BookingPage() {
                     </option>
                   ))}
                 </select>
-              </div>
+              </FormField>
 
-              {/* Dates */}
               <div className={`grid grid-cols-1 sm:grid-cols-2 gap-4${isRTL ? ' sm:flex sm:flex-row-reverse' : ''}`}>
-                <div className="space-y-2">
-                  <label className={`block text-xs tracking-widest uppercase text-cream/60${isRTL ? ' text-right' : ''}`}>
-                    {t('pickupDate')} *
-                  </label>
+                <FormField label={t('pickupDate')} error={errors.startDate} required>
                   <Input
                     type="date"
                     name="startDate"
                     value={form.startDate}
                     min={getTodayISO()}
                     onChange={handleChange}
-                    required
+                    className={inputErrorClass(!!errors.startDate)}
                   />
-                </div>
-                <div className="space-y-2">
-                  <label className={`block text-xs tracking-widest uppercase text-cream/60${isRTL ? ' text-right' : ''}`}>
-                    {t('returnDate')} *
-                  </label>
+                </FormField>
+                <FormField label={t('returnDate')} error={errors.endDate} required>
                   <Input
                     type="date"
                     name="endDate"
                     value={form.endDate}
                     min={form.startDate || getTomorrowISO()}
                     onChange={handleChange}
-                    required
+                    className={inputErrorClass(!!errors.endDate)}
                   />
-                </div>
+                </FormField>
               </div>
 
-              {/* Name + Phone */}
               <div className={`grid grid-cols-1 sm:grid-cols-2 gap-4${isRTL ? ' sm:flex sm:flex-row-reverse' : ''}`}>
-                <div className="space-y-2">
-                  <label className={`block text-xs tracking-widest uppercase text-cream/60${isRTL ? ' text-right' : ''}`}>
-                    {t('fullName')} *
-                  </label>
+                <FormField label={t('fullName')} error={errors.customerName} required>
                   <Input
                     type="text"
                     name="customerName"
                     value={form.customerName}
                     onChange={handleChange}
                     placeholder={locale === 'ar' ? 'الاسم الكامل' : 'John Doe'}
-                    required
                     dir={isRTL ? 'rtl' : 'ltr'}
+                    className={inputErrorClass(!!errors.customerName)}
                   />
-                </div>
-                <div className="space-y-2">
-                  <label className={`block text-xs tracking-widest uppercase text-cream/60${isRTL ? ' text-right' : ''}`}>
-                    {t('phone')} *
-                  </label>
+                </FormField>
+                <FormField label={t('phone')} error={errors.phone} required>
                   <Input
                     type="tel"
                     name="phone"
                     value={form.phone}
                     onChange={handleChange}
                     placeholder="+20 1xx xxx xxxx"
-                    required
+                    className={inputErrorClass(!!errors.phone)}
                   />
-                </div>
+                </FormField>
               </div>
 
               {/* Notes */}

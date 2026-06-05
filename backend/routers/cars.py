@@ -1,31 +1,29 @@
 import json
-from typing import List
+from typing import Annotated, List
 from uuid import UUID
-from fastapi import APIRouter, status, Depends, HTTPException
-from services.cars import create_car, get_all_cars, edit_car, remove_car, get_car
+from fastapi import APIRouter, status, Depends, HTTPException, UploadFile, File
+from services.cars import create_car, list_cars, update_car, delete_car, get_car
+from services.images import create_car_image
 from app.database import SessionDep
 from schemas.cars import CarCreate, CarFormDependency, CarResponse
 
 router = APIRouter(prefix="/cars", tags=["Cars"])
 
 
-@router.get("/", response_model=List[CarResponse])
-async def list_cars(
-    session: SessionDep, car_category: str | None = None, featured: bool | None = None
+@router.get("", response_model=List[CarResponse])
+async def list_cars_endpoint(
+    session: SessionDep, category: str | None = None, featured: bool | None = None
 ):
-    return await get_all_cars(session, car_category, featured)
+    return await list_cars(session, category, featured)
 
 
 @router.get("/{car_id}", response_model=CarResponse)
-async def find_car(session: SessionDep, car_id: UUID):
-    car = await get_car(session, car_id)
-    if not car:
-        raise HTTPException(status_code=404, detail="Car not found")
-    return car
+async def get_car_endpoint(session: SessionDep, car_id: UUID):
+    return await get_car(session, car_id)
 
 
-@router.post("/", response_model=CarResponse, status_code=status.HTTP_201_CREATED)
-async def add_new_car(
+@router.post("", response_model=CarResponse, status_code=status.HTTP_201_CREATED)
+async def create_car_endpoint(
     session: SessionDep, data: CarFormDependency = Depends(CarFormDependency)
 ):
     specs_dict = json.loads(data.specs) if data.specs else {}
@@ -46,21 +44,42 @@ async def add_new_car(
 
 
 @router.patch("/{car_id}", response_model=CarResponse)
-async def update_car(
+async def update_car_endpoint(
     session: SessionDep,
     car_id: UUID,
     data: CarFormDependency = Depends(CarFormDependency),
 ):
-    existing_car = await get_car(session, car_id)
-    if not existing_car:
-        raise HTTPException(status_code=404, detail="Car not found")
-
-    return await edit_car(session, car_id, data)
+    await get_car(session, car_id)
+    return await update_car(session, car_id, data)
 
 
 @router.delete("/{car_id}")
-async def delete_car(session: SessionDep, car_id: UUID):
-    success = await remove_car(session, car_id)
-    if not success:
-        raise HTTPException(status_code=404, detail="Car not found")
+async def delete_car_endpoint(session: SessionDep, car_id: UUID):
+    await delete_car(session, car_id)
     return {"message": "Car deleted successfully"}
+
+
+@router.post("/{car_id}/images")
+async def upload_car_images(
+    car_id: UUID,
+    uploaded_images: Annotated[
+        List[UploadFile], File(description="Upload multiple images")
+    ],
+    session: SessionDep,
+):
+    await get_car(session, car_id)
+    added_images = []
+
+    for image in uploaded_images:
+        try:
+            new_image = await create_car_image(session, car_id, image)
+            added_images.append(new_image)
+        except Exception as e:
+            raise HTTPException(
+                status_code=400, detail=f"Could not upload {image.filename}: {str(e)}"
+            )
+
+    if not added_images:
+        raise HTTPException(status_code=400, detail="No images were uploaded")
+
+    return {"message": "Images uploaded successfully", "count": len(added_images)}

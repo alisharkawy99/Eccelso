@@ -1,11 +1,12 @@
 import asyncio
+from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from models.images import Image
 import cloudinary.uploader
 
 
-async def add_image_to_car(session: AsyncSession, car_id: str, file):
+async def create_car_image(session: AsyncSession, car_id: UUID, file):
     result = await asyncio.to_thread(cloudinary.uploader.upload, file.file)
 
     new_image = Image(
@@ -17,7 +18,7 @@ async def add_image_to_car(session: AsyncSession, car_id: str, file):
     return new_image
 
 
-async def delete_image(session: AsyncSession, image_id: str):
+async def delete_image(session: AsyncSession, image_id: UUID):
     result = await session.execute(select(Image).where(Image.id == image_id))
     image = result.scalar_one_or_none()
     if image:

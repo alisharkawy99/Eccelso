@@ -4,13 +4,20 @@ import { useState, useEffect } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { usePathname, useRouter } from "@/navigation";
 import { Link } from "@/navigation";
-import { Menu, X, ChevronDown } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { Button } from "./ui/button";
 import Modal from "./Modal";
-import { Content } from "next/font/google";
 import UserAuthForm from "./UserForm";
 import Cookies from "js-cookie";
 import UserProfileMenu from "./UserProfileMenu";
+
+interface StoredUser {
+  name: string;
+  email?: string;
+  role?: string;
+  avatar_url?: string | null;
+}
+
 export default function Navbar() {
   const t = useTranslations("nav");
   const locale = useLocale();
@@ -18,12 +25,11 @@ export default function Navbar() {
   const router = useRouter();
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [langOpen, setLangOpen] = useState(false);
-  const isRTL = locale === "ar";
-
   const [openUserModal, setOpenUserModal] = useState(false);
   const token = Cookies.get("authToken");
-  const [userName, setUserName] = useState("");
+  const [user, setUser] = useState<StoredUser | null>(null);
+  const isRTL = locale === "ar";
+
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
     window.addEventListener("scroll", handleScroll);
@@ -33,11 +39,21 @@ export default function Navbar() {
   useEffect(() => {
     setMobileOpen(false);
   }, [pathname]);
+
   useEffect(() => {
     const userString = sessionStorage.getItem("user");
-    const user = userString ? JSON.parse(userString) : null;
-    setUserName(user.name);
-  }, [openUserModal]);
+    if (!userString) {
+      setUser(null);
+      return;
+    }
+
+    try {
+      setUser(JSON.parse(userString));
+    } catch {
+      setUser(null);
+    }
+  }, [openUserModal, token]);
+
   const navLinks = [
     { href: "/", label: t("home") },
     { href: "/fleet", label: t("fleet") },
@@ -47,7 +63,6 @@ export default function Navbar() {
 
   const switchLocale = (newLocale: string) => {
     router.replace(pathname, { locale: newLocale as "en" | "ar" });
-    setLangOpen(false);
   };
 
   return (
@@ -95,8 +110,13 @@ export default function Navbar() {
           >
             {t("booking")}
           </Link>
-          {token ? (
-            <UserProfileMenu userName={userName} />
+          {token && user ? (
+            <UserProfileMenu
+              userName={user.name}
+              userRole={user.role}
+              userEmail={user.email}
+              avatarUrl={user.avatar_url}
+            />
           ) : (
             <Button size="md" onClick={() => setOpenUserModal(true)}>
               Sign in
@@ -105,7 +125,7 @@ export default function Navbar() {
         </div>
 
         <button
-          className="md:hidden text-cream/70 hover:text-gold transition-colors p-2"
+          className="md:hidden text-cream/70 hover:text-gold transition-colors p-2 rounded-xl"
           onClick={() => setMobileOpen(!mobileOpen)}
           aria-label="Toggle menu"
         >
@@ -120,6 +140,18 @@ export default function Navbar() {
       {mobileOpen && (
         <div className="md:hidden bg-luxury-dark border-b border-luxury-border animate-fade-in">
           <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col gap-4">
+            {token && user && (
+              <div className="rounded-2xl border border-gold/20 bg-gold/5 px-4 py-3">
+                <p className="text-[10px] uppercase tracking-[0.2em] text-cream/40">
+                  Signed in as
+                </p>
+                <p className="font-playfair text-lg text-cream">{user.name}</p>
+                <p className="text-xs text-gold/80">
+                  {user.role === "Admin" ? "Admin Access" : "VIP Member"}
+                </p>
+              </div>
+            )}
+
             {navLinks.map((link) => (
               <Link
                 key={link.href}
@@ -131,6 +163,7 @@ export default function Navbar() {
                 {link.label}
               </Link>
             ))}
+
             <Link
               href="/booking"
               className="btn-gold text-center text-xs tracking-widest uppercase py-3 mt-2"
@@ -138,12 +171,31 @@ export default function Navbar() {
               {t("booking")}
             </Link>
 
+            {token && user ? (
+              <UserProfileMenu
+                userName={user.name}
+                userRole={user.role}
+                userEmail={user.email}
+                avatarUrl={user.avatar_url}
+              />
+            ) : (
+              <Button
+                className="w-full"
+                onClick={() => {
+                  setMobileOpen(false);
+                  setOpenUserModal(true);
+                }}
+              >
+                Sign in
+              </Button>
+            )}
+
             <div className="flex gap-4 pt-2">
               {["en", "ar"].map((l) => (
                 <button
                   key={l}
                   onClick={() => switchLocale(l)}
-                  className={`text-xs tracking-wider uppercase ${
+                  className={`text-xs tracking-wider uppercase rounded-lg px-2 py-1 ${
                     locale === l ? "text-gold" : "text-cream/40"
                   }`}
                 >
@@ -154,7 +206,9 @@ export default function Navbar() {
           </div>
         </div>
       )}
+
       <Modal
+        variant="auth"
         isOpen={openUserModal}
         onClose={() => setOpenUserModal(false)}
         content={<UserAuthForm onClose={() => setOpenUserModal(false)} />}

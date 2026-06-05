@@ -12,12 +12,12 @@ from models.images import Image
 from schemas.cars import CarCreate, CarFormDependency
 
 
-async def get_all_cars(
-    db: AsyncSession, car_category: str | None = None, featured: bool | None = None
+async def list_cars(
+    db: AsyncSession, category: str | None = None, featured: bool | None = None
 ) -> list[Car]:
     query = select(Car).options(selectinload(Car.images))
-    if car_category:
-        query = query.where(Car.category == car_category)
+    if category:
+        query = query.where(Car.category == category)
     if featured:
         query = query.where(Car.featured == featured)
     result = await db.execute(query)
@@ -50,7 +50,7 @@ async def create_car(db: AsyncSession, car_data: CarCreate, images: List[UploadF
     return result.scalar_one()
 
 
-async def edit_car(db: AsyncSession, car_id: UUID, data: CarFormDependency):
+async def update_car(db: AsyncSession, car_id: UUID, data: CarFormDependency):
     result = await db.execute(
         select(Car).options(selectinload(Car.images)).where(Car.id == car_id)
     )
@@ -87,7 +87,7 @@ async def edit_car(db: AsyncSession, car_id: UUID, data: CarFormDependency):
     return result.scalar_one()
 
 
-async def remove_car(db: AsyncSession, car_id: UUID):
+async def delete_car(db: AsyncSession, car_id: UUID):
     result = await db.execute(
         select(Car).options(selectinload(Car.images)).where(Car.id == car_id)
     )

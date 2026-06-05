@@ -33,7 +33,7 @@ export default function CarCard({ car, onDelete, isDeleting }: ICarCardProps) {
           }}
           variant="outline"
           size="sm"
-          className="w-full border-luxury-border text-cream !rounded-lg"
+          className="w-full border-luxury-border text-cream"
         >
           Cancel
         </Button>
@@ -41,7 +41,7 @@ export default function CarCard({ car, onDelete, isDeleting }: ICarCardProps) {
           type="submit"
           variant="gold"
           size="sm"
-          className="w-full uppercase tracking-widest !rounded-lg"
+          className="w-full uppercase tracking-widest"
           onClick={() => {
             onDelete?.();
             setDeleteCar(false);

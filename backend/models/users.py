@@ -23,3 +23,5 @@ class Users(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     phone_number = Column(String, nullable=False)
     address = Column(String, nullable=True)
+    avatar_url = Column(String, nullable=True)
+    avatar_public_id = Column(String, nullable=True)

@@ -4,7 +4,7 @@ import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 
 const buttonBase =
-  "inline-flex items-center justify-center whitespace-nowrap rounded-none text-sm font-semibold tracking-widest uppercase transition-all duration-300 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold disabled:pointer-events-none disabled:opacity-40";
+  "inline-flex items-center justify-center whitespace-nowrap rounded-xl text-sm font-semibold tracking-widest uppercase transition-all duration-300 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold disabled:pointer-events-none disabled:opacity-40";
 
 const buttonVariantClasses = {
   gold: "btn-gold px-6 py-3",

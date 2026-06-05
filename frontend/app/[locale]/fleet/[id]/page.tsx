@@ -19,7 +19,7 @@ import {
   Plus,
   Trash2,
 } from "lucide-react";
-import axios from "axios";
+import { apiClient } from "@/lib/api";
 import Modal from "@/components/Modal";
 
 export default function CarDetailPage() {
@@ -72,7 +72,7 @@ export default function CarDetailPage() {
       const formData = new FormData();
       images.forEach((img) => formData.append("uploaded_images", img));
 
-      await axios.post(`http://localhost:8000/images/${params.id}`, formData, {
+      await apiClient.post(`/cars/${params.id}/images`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
@@ -90,7 +90,7 @@ export default function CarDetailPage() {
   const handleDeleteImage = useCallback(
     async (id: string) => {
       try {
-        await axios.delete(`http://localhost:8000/images/${id}`);
+        await apiClient.delete(`/images/${id}`);
         // Reuse the refetcher
         await refreshCarData();
       } catch (error) {
@@ -168,14 +168,14 @@ export default function CarDetailPage() {
             type="button"
             onClick={() => setOpenUpload(false)}
             variant="outline"
-            className="w-full rounded-none border-luxury-border text-cream"
+            className="w-full border-luxury-border text-cream"
           >
             Cancel
           </Button>
           <Button
             type="submit"
             variant="gold"
-            className="w-full rounded-none uppercase tracking-widest"
+            className="w-full uppercase tracking-widest"
             onClick={handleUploadIcons}
             disabled={isUploading}
           >

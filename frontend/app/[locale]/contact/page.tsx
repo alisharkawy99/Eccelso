@@ -7,6 +7,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { MessageCircle, Phone, MapPin, CheckCircle } from 'lucide-react';
 import { InstagramIcon } from '@/components/ui/instagram-icon';
+import { FormField } from '@/components/ui/FormField';
+import {
+  FieldErrors,
+  hasErrors,
+  inputErrorClass,
+  validateName,
+  validatePhone,
+  validateRequired,
+} from '@/lib/validation';
 
 export default function ContactPage() {
   const t = useTranslations('contact');
@@ -16,13 +25,37 @@ export default function ContactPage() {
   const [form, setForm] = useState({ name: '', phone: '', message: '' });
   const [submitting, setSubmitting] = useState(false);
   const [formSuccess, setFormSuccess] = useState(false);
+  const [errors, setErrors] = useState<FieldErrors>({});
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+    setErrors((prev) => {
+      const next = { ...prev };
+      delete next[name];
+      return next;
+    });
+  };
+
+  const validateContact = (): FieldErrors => {
+    const next: FieldErrors = {};
+    const nameError = validateName(form.name);
+    const phoneError = validatePhone(form.phone);
+    const messageError = validateRequired(form.message, 'Message');
+    if (nameError) next.name = nameError;
+    if (phoneError) next.phone = phoneError;
+    if (messageError) next.message = messageError;
+    else if (form.message.trim().length < 10) {
+      next.message = 'Message must be at least 10 characters';
+    }
+    return next;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const validationErrors = validateContact();
+    setErrors(validationErrors);
+    if (hasErrors(validationErrors)) return;
     setSubmitting(true);
     await submitContactMessage(form);
     setSubmitting(false);
@@ -139,47 +172,40 @@ export default function ContactPage() {
                   </button>
                 </div>
               ) : (
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div className="space-y-1.5">
-                    <label className={`block text-xs tracking-widest uppercase text-cream/60${isRTL ? ' text-right' : ''}`}>
-                      {t('formName')} *
-                    </label>
+                <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+                  <FormField label={t('formName')} error={errors.name} required>
                     <Input
                       name="name"
                       value={form.name}
                       onChange={handleChange}
-                      required
                       dir={isRTL ? 'rtl' : 'ltr'}
+                      className={inputErrorClass(!!errors.name)}
                     />
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className={`block text-xs tracking-widest uppercase text-cream/60${isRTL ? ' text-right' : ''}`}>
-                      {t('formPhone')} *
-                    </label>
+                  </FormField>
+                  <FormField label={t('formPhone')} error={errors.phone} required>
                     <Input
                       type="tel"
                       name="phone"
                       value={form.phone}
                       onChange={handleChange}
                       placeholder={t('phonePlaceholder')}
-                      required
+                      className={inputErrorClass(!!errors.phone)}
                     />
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className={`block text-xs tracking-widest uppercase text-cream/60${isRTL ? ' text-right' : ''}`}>
-                      {t('formMessage')} *
-                    </label>
+                  </FormField>
+                  <FormField label={t('formMessage')} error={errors.message} required>
                     <textarea
                       name="message"
                       value={form.message}
                       onChange={handleChange}
                       placeholder={t('messagePlaceholder')}
                       rows={4}
-                      required
                       dir={isRTL ? 'rtl' : 'ltr'}
-                      className="flex w-full bg-luxury-gray border border-luxury-border rounded-none px-4 py-2 text-sm text-cream placeholder:text-cream/30 focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold/30 transition-colors resize-none"
+                      className={inputErrorClass(
+                        !!errors.message,
+                        'flex w-full rounded-xl bg-luxury-gray border border-luxury-border px-4 py-2 text-sm text-cream placeholder:text-cream/30 focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold/30 transition-colors resize-none',
+                      )}
                     />
-                  </div>
+                  </FormField>
                   <Button
                     type="submit"
                     variant="gold"

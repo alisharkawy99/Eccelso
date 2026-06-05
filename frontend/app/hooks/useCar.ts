@@ -1,12 +1,12 @@
 import { useCallback, useState } from 'react';
-import axios from 'axios';
+import { apiClient } from '@/lib/api';
 
 export const useCars = () => {
   const [isDeleting,setIsDeleting]=useState(false);
   const handleDeleteCar = useCallback(async (id: string) => {
     setIsDeleting(true)
     try {
-      await axios.delete(`http://localhost:8000/cars/${id}`);
+      await apiClient.delete(`/cars/${id}`);
       // You could add logic here to trigger a re-fetch or state update
       console.log("Car deleted successfully");
     } catch (error) {
