@@ -16,6 +16,13 @@ import {
   validatePhone,
   validateRequired,
 } from '@/lib/validation';
+import {
+  INSTAGRAM_HANDLE,
+  INSTAGRAM_URL,
+  PHONE_TEL,
+  WHATSAPP_NUMBER,
+  WHATSAPP_URL,
+} from '@/lib/social';
 
 export default function ContactPage() {
   const t = useTranslations('contact');
@@ -67,24 +74,24 @@ export default function ContactPage() {
     {
       icon: <MessageCircle className="w-6 h-6" />,
       label: t('whatsapp'),
-      value: '+20 100 000 0000',
-      href: 'https://wa.me/201000000000',
+      value: WHATSAPP_NUMBER,
+      href: WHATSAPP_URL,
       bg: 'bg-green-900/20 border-green-700/30',
       iconColor: 'text-green-400',
     },
     {
       icon: <Phone className="w-6 h-6" />,
       label: t('phone'),
-      value: '+20 100 000 0000',
-      href: 'tel:+201000000000',
+      value: WHATSAPP_NUMBER,
+      href: PHONE_TEL,
       bg: 'bg-blue-900/20 border-blue-700/30',
       iconColor: 'text-blue-400',
     },
     {
       icon: <InstagramIcon className="w-6 h-6" />,
       label: t('instagram'),
-      value: '@eccelso.sharkawy',
-      href: 'https://instagram.com/eccelso.sharkawy',
+      value: INSTAGRAM_HANDLE,
+      href: INSTAGRAM_URL,
       bg: 'bg-pink-900/20 border-pink-700/30',
       iconColor: 'text-pink-400',
     },
@@ -117,7 +124,7 @@ export default function ContactPage() {
           {/* WhatsApp — Primary CTA */}
           <div className="mb-10">
             <a
-              href="https://wa.me/201000000000"
+              href={WHATSAPP_URL}
               target="_blank"
               rel="noopener noreferrer"
               className="group flex items-center justify-center gap-4 w-full py-5 bg-green-900/20 border border-green-700/30 hover:bg-green-900/40 hover:border-green-600/50 transition-all duration-300"
@@ -125,7 +132,7 @@ export default function ContactPage() {
               <MessageCircle className="w-8 h-8 text-green-400 group-hover:scale-110 transition-transform" />
               <div className={`${isRTL ? 'text-right' : ''}`}>
                 <div className="text-base font-semibold text-cream tracking-wide">{t('whatsapp')}</div>
-                <div className="text-sm text-green-400">+20 100 000 0000</div>
+                <div className="text-sm text-green-400">{WHATSAPP_NUMBER}</div>
               </div>
             </a>
           </div>

@@ -3,6 +3,7 @@
 import { useTranslations, useLocale } from 'next-intl';
 import Image from 'next/image';
 import { Star, Eye, Heart, Shield } from 'lucide-react';
+import { INSTAGRAM_HANDLE, INSTAGRAM_URL } from '@/lib/social';
 
 export default function AboutPage() {
   const t = useTranslations('about');
@@ -135,12 +136,12 @@ export default function AboutPage() {
               : 'See our luxury fleet in action on Instagram'}
           </p>
           <a
-            href="https://instagram.com/eccelso.sharkawy"
+            href={INSTAGRAM_URL}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-block btn-gold-outline px-8 py-3 text-xs tracking-widest uppercase"
           >
-            @eccelso.sharkawy
+            {INSTAGRAM_HANDLE}
           </a>
         </div>
       </section>

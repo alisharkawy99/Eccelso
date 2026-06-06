@@ -4,6 +4,13 @@ import { useTranslations, useLocale } from 'next-intl';
 import { Link } from '@/navigation';
 import { MessageCircle, MapPin, Phone } from 'lucide-react';
 import { InstagramIcon } from '@/components/ui/instagram-icon';
+import {
+  INSTAGRAM_HANDLE,
+  INSTAGRAM_URL,
+  PHONE_TEL,
+  WHATSAPP_NUMBER,
+  WHATSAPP_URL,
+} from '@/lib/social';
 
 export default function Footer() {
   const t = useTranslations();
@@ -36,7 +43,7 @@ export default function Footer() {
             </p>
             <div className={`flex items-center gap-4${isRTL ? ' flex-row-reverse justify-end' : ''}`}>
               <a
-                href="https://instagram.com/eccelso.sharkawy"
+                href={INSTAGRAM_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-cream/40 hover:text-gold transition-colors"
@@ -45,7 +52,7 @@ export default function Footer() {
                 <InstagramIcon className="w-5 h-5" />
               </a>
               <a
-                href="https://wa.me/201000000000"
+                href={WHATSAPP_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-cream/40 hover:text-gold transition-colors"
@@ -79,13 +86,13 @@ export default function Footer() {
             </h3>
             <div className="flex flex-col gap-3">
               <a
-                href="tel:+201000000000"
+                href={PHONE_TEL}
                 className={`flex items-center gap-3 text-sm text-cream/40 hover:text-gold transition-colors${
                   isRTL ? ' flex-row-reverse' : ''
                 }`}
               >
                 <Phone className="w-4 h-4 flex-shrink-0 text-gold/60" />
-                <span>+20 100 000 0000</span>
+                <span>{WHATSAPP_NUMBER}</span>
               </a>
               <div
                 className={`flex items-center gap-3 text-sm text-cream/40${
@@ -96,7 +103,7 @@ export default function Footer() {
                 <span>{t('contact.location')}</span>
               </div>
               <a
-                href="https://instagram.com/eccelso.sharkawy"
+                href={INSTAGRAM_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 className={`flex items-center gap-3 text-sm text-cream/40 hover:text-gold transition-colors${
@@ -104,7 +111,7 @@ export default function Footer() {
                 }`}
               >
                 <InstagramIcon className="w-4 h-4 flex-shrink-0 text-gold/60" />
-                <span>@eccelso.sharkawy</span>
+                <span>{INSTAGRAM_HANDLE}</span>
               </a>
             </div>
           </div>

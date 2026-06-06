@@ -10,6 +10,7 @@ import CarCard from "@/components/CarCard";
 import { Button } from "@/components/ui/button";
 import { Shield, Star, Zap } from "lucide-react";
 import { InstagramIcon } from "@/components/ui/instagram-icon";
+import { INSTAGRAM_URL } from "@/lib/social";
 
 export default function HomePage() {
   const t = useTranslations("home");
@@ -213,7 +214,7 @@ export default function HomePage() {
               : "Follow us for the latest cars, exclusive offers, and behind-the-scenes moments."}
           </p>
           <a
-            href="https://instagram.com/eccelso.sharkawy"
+            href={INSTAGRAM_URL}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-block btn-gold px-8 py-3 text-xs tracking-widest uppercase"

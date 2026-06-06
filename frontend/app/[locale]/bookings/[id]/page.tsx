@@ -18,6 +18,7 @@ import {
   Tag,
   XCircle,
 } from 'lucide-react';
+import { WHATSAPP_URL } from '@/lib/social';
 
 export default function BookingDetailPage() {
   const params = useParams();
@@ -205,7 +206,7 @@ export default function BookingDetailPage() {
                   </Link>
                 )}
                 <a
-                  href="https://wa.me/201000000000"
+                  href={WHATSAPP_URL}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex-1"

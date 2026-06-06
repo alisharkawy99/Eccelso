@@ -28,6 +28,7 @@ import {
 import { apiClient } from "@/lib/api";
 import Modal from "@/components/Modal";
 import { useAuth } from "@/app/hooks/useAuth";
+import { WHATSAPP_URL } from "@/lib/social";
 
 const galleryBtn =
   "flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-black/50 backdrop-blur-md text-cream/70 transition-all duration-200 hover:border-gold/50 hover:bg-gold/10 hover:text-gold";
@@ -593,7 +594,7 @@ export default function CarDetailPage() {
                   </Button>
                 )}
                 <a
-                  href="https://wa.me/201000000000"
+                  href={WHATSAPP_URL}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex-1"
