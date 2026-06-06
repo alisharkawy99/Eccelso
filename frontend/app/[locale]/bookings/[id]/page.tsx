@@ -81,7 +81,7 @@ export default function BookingDetailPage() {
       <div className="min-h-screen bg-luxury-black pt-28 flex flex-col items-center justify-center gap-4 px-4">
         <p className="text-cream/50">{error || (locale === 'ar' ? 'الحجز غير موجود' : 'Booking not found')}</p>
         <Link href="/my-bookings">
-          <Button variant="gold-outline">
+          <Button variant="outline">
             {locale === 'ar' ? 'العودة للحجوزات' : 'Back to My Bookings'}
           </Button>
         </Link>
@@ -199,7 +199,7 @@ export default function BookingDetailPage() {
                 )}
                 {car && (
                   <Link href={`/fleet/${car.id}`} className="flex-1">
-                    <Button variant="gold-outline" className="w-full">
+                    <Button variant="outline" className="w-full">
                       {locale === 'ar' ? 'عرض السيارة' : 'View Car Listing'}
                     </Button>
                   </Link>

@@ -1,11 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { Car, CarCategory } from "@/types";
 import { getCars, getCarsByCategory } from "@/lib/api";
 import CarCard from "@/components/CarCard";
-import axios from "axios";
 import { useCars } from "@/app/hooks/useCar";
 import { useAuth } from "@/app/hooks/useAuth";
 import CarForm from "@/components/CarForm";

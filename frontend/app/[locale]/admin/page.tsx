@@ -92,7 +92,7 @@ export default function AdminPage() {
       name: car.name,
       brand: car.brand,
       category: car.category,
-      imageUrl: car.images[0] || '',
+      imageUrl: car.images[0]?.url || '',
       engine: car.specs.engine,
       power: car.specs.power,
       seats: String(car.specs.seats),
@@ -107,11 +107,11 @@ export default function AdminPage() {
     e.preventDefault();
     setSaving(true);
 
-    const carData = {
+    const carData: Omit<Car, 'id'> = {
       name: form.name,
       brand: form.brand,
       category: form.category,
-      images: [form.imageUrl],
+      images: [],
       specs: {
         engine: form.engine,
         power: form.power,
@@ -123,13 +123,22 @@ export default function AdminPage() {
     };
 
     if (editingCar) {
-      const updated = await adminUpdateCar(editingCar.id, carData);
+      const updated = await adminUpdateCar(editingCar.id, {
+        name: carData.name,
+        brand: carData.brand,
+        category: carData.category,
+        specs: carData.specs,
+        available: carData.available,
+        featured: carData.featured,
+      });
       if (updated) {
         setCars((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
       }
     } else {
       const newCar = await adminAddCar(carData);
-      setCars((prev) => [newCar, ...prev]);
+      if (newCar) {
+        setCars((prev) => [newCar, ...prev]);
+      }
     }
 
     setSaving(false);
@@ -245,9 +254,9 @@ export default function AdminPage() {
                       {/* Image */}
                       <td className="py-3 px-3">
                         <div className="w-14 h-10 relative bg-luxury-gray overflow-hidden flex-shrink-0">
-                          {car.images[0] && (
+                          {car.images[0]?.url && (
                             <Image
-                              src={car.images[0]}
+                              src={car.images[0].url}
                               alt={car.name}
                               fill
                               className="object-cover"

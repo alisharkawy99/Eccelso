@@ -1,6 +1,8 @@
 import { Car } from '@/types';
 
-export const dummyCars: Car[] = [
+type DummyCarInput = Omit<Car, 'images'> & { images: string[] };
+
+const rawDummyCars: DummyCarInput[] = [
   {
     id: '1',
     name: 'Ferrari 488 GTB',
@@ -162,3 +164,12 @@ export const dummyCars: Car[] = [
     description: 'The BMW M8 Competition is the ultimate M car. With 617 hp, xDrive AWD, and a luxurious interior, it is the perfect blend of grand tourer refinement and track-day capability.',
   },
 ];
+
+export const dummyCars: Car[] = rawDummyCars.map((car) => ({
+  ...car,
+  images: car.images.map((url, index) => ({
+    id: `${car.id}-${index}`,
+    url,
+    public_id: `${car.id}-${index}`,
+  })),
+}));

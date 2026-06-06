@@ -7,6 +7,7 @@ import React, {
   Dispatch,
   SetStateAction,
 } from "react";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FormField } from "@/components/ui/FormField";
@@ -403,9 +404,12 @@ export default function CarForm({
             ) : (
               images.map((file, index) => (
                 <div key={index} className="relative min-w-[100px] h-full">
-                  <img
+                  <Image
                     src={URL.createObjectURL(file)}
                     alt="preview"
+                    unoptimized
+                    width={100}
+                    height={100}
                     className="w-full h-full object-cover rounded-lg border border-luxury-border"
                   />
                   <button

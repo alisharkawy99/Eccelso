@@ -101,7 +101,7 @@ export default function BookingCard({ booking }: BookingCardProps) {
         )}
 
         <Link href={carDetailsHref} className="mt-auto">
-          <Button variant="gold-outline" size="sm" className="w-full text-xs tracking-widest uppercase">
+          <Button variant="outline" size="sm" className="w-full text-xs tracking-widest uppercase">
             {locale === "ar" ? "عرض التفاصيل" : "View Details"}
           </Button>
         </Link>
