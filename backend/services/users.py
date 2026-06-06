@@ -23,7 +23,23 @@ async def create_user(
     user_dic["password_hash"] = await get_password_hash(user_dic.pop("password"))
 
     if avatar and avatar.filename:
-        upload_result = await asyncio.to_thread(cloudinary.uploader.upload, avatar.file)
+        content = await avatar.read()
+        if not content:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Avatar file is empty.",
+            )
+        try:
+            upload_result = await asyncio.to_thread(
+                cloudinary.uploader.upload,
+                content,
+                folder="eccelso/avatars",
+            )
+        except Exception as exc:
+            raise HTTPException(
+                status_code=status.HTTP_502_BAD_GATEWAY,
+                detail="Failed to upload avatar. Try again without a photo.",
+            ) from exc
         user_dic["avatar_url"] = upload_result["secure_url"]
         user_dic["avatar_public_id"] = upload_result["public_id"]
 

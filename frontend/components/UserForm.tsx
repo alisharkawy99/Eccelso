@@ -150,13 +150,7 @@ export default function UserAuthForm({ onClose }: UserAuthFormProps) {
         }
         if (avatar) formDataToSend.append("avatar", avatar);
 
-        const response = await apiClient.post(
-          "/auth/register",
-          formDataToSend,
-          {
-            headers: { "Content-Type": "multipart/form-data" },
-          },
-        );
+        const response = await apiClient.post("/auth/register", formDataToSend);
         if (response.data.message) {
           setStep("login");
           setError("");

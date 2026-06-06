@@ -6,11 +6,17 @@ from routers.cars import router as cars_router
 from routers.images import router as images_router
 from routers.users import router as users_router
 from routers.bookings import router as bookings_router
+from app.config import settings
 
-origins = [
-    "http://localhost:3000",
-    "http://localhost:5173",
-]
+origins = list(
+    dict.fromkeys(
+        [
+            "http://localhost:3000",
+            "http://localhost:5173",
+            settings.frontend_url,
+        ]
+    )
+)
 app = FastAPI(redirect_slashes=False)
 app.add_middleware(
     CORSMiddleware,

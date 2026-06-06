@@ -6,6 +6,7 @@ class Settings(BaseSettings):
     database_url: str
     host: str = "0.0.0.0"
     port: int = 8000
+    frontend_url: str = "http://localhost:3000"
     # Cloudinary settings
     cloudinary_cloud_name: str
     cloudinary_api_key: str
