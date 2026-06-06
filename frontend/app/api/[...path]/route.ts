@@ -16,6 +16,19 @@ const HOP_BY_HOP_HEADERS = new Set([
   "upgrade",
 ]);
 
+const STRIP_RESPONSE_HEADERS = new Set([
+  "connection",
+  "keep-alive",
+  "proxy-authenticate",
+  "proxy-authorization",
+  "te",
+  "trailers",
+  "transfer-encoding",
+  "upgrade",
+  "content-encoding",
+  "content-length",
+]);
+
 async function proxy(
   request: NextRequest,
   { params }: { params: { path: string[] } },
@@ -29,6 +42,7 @@ async function proxy(
     if (
       lowerKey === "host" ||
       lowerKey === "content-length" ||
+      lowerKey === "accept-encoding" ||
       HOP_BY_HOP_HEADERS.has(lowerKey)
     ) {
       return;
@@ -48,13 +62,14 @@ async function proxy(
   try {
     const response = await fetch(targetUrl, init);
     const responseHeaders = new Headers();
+    const body = await response.arrayBuffer();
 
     response.headers.forEach((value, key) => {
-      if (HOP_BY_HOP_HEADERS.has(key.toLowerCase())) return;
+      if (STRIP_RESPONSE_HEADERS.has(key.toLowerCase())) return;
       responseHeaders.set(key, value);
     });
 
-    return new NextResponse(response.body, {
+    return new NextResponse(body, {
       status: response.status,
       statusText: response.statusText,
       headers: responseHeaders,
