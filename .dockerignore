@@ -1,0 +1,16 @@
+.git
+.gitignore
+**/__pycache__
+**/*.py[cod]
+**/.env
+**/.env.*
+**/node_modules
+**/.next
+**/out
+**/.venv
+**/venv
+**/*.md
+**/.pytest_cache
+**/.mypy_cache
+**/.ruff_cache
+backend/.http

@@ -4,8 +4,9 @@ from argon2.exceptions import VerifyMismatchError
 from datetime import datetime, timedelta, timezone
 from jose import jwt
 
+from app.config import settings
+
 ph = PasswordHasher()
-SECRET_KEY = "Secret_key"
 ALGORITHM = "HS256"
 
 
@@ -24,4 +25,6 @@ async def create_access_token(data: dict) -> str:
     to_encode = data.copy()
     expire = datetime.now(timezone.utc) + timedelta(minutes=30)
     to_encode.update({"exp": expire})
-    return await asyncio.to_thread(jwt.encode, to_encode, SECRET_KEY, ALGORITHM)
+    return await asyncio.to_thread(
+        jwt.encode, to_encode, settings.jwt_secret, ALGORITHM
+    )

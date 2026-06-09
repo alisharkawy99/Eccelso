@@ -4,6 +4,7 @@ import cloudinary
 
 class Settings(BaseSettings):
     database_url: str
+    jwt_secret: str
     host: str = "0.0.0.0"
     port: int = 8000
     frontend_url: str = "http://localhost:3000"

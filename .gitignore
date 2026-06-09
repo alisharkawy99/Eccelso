@@ -2,9 +2,14 @@
 .cursorrules
 .vscode/settings.json
 .vscode/extensions.json
-# Secrets
+
+# Secrets — never commit
+.env
 backend/.env
 frontend/.env
+backend/.env.example
+.env.prod.example
+
 # Python
 venv/
 __pycache__/

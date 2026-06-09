@@ -6,8 +6,9 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError, jwt
 from sqlalchemy import select
 
+from app.config import settings
 from app.database import SessionDep
-from app.utils.security import ALGORITHM, SECRET_KEY
+from app.utils.security import ALGORITHM
 from models.users import RoleEnum, Users
 
 security = HTTPBearer(auto_error=False)
@@ -28,7 +29,10 @@ async def get_current_user(
 
     try:
         payload = await asyncio.to_thread(
-            jwt.decode, credentials.credentials, SECRET_KEY, algorithms=[ALGORITHM]
+            jwt.decode,
+            credentials.credentials,
+            settings.jwt_secret,
+            algorithms=[ALGORITHM],
         )
         email: str | None = payload.get("sub")
         if email is None:
