@@ -28,13 +28,9 @@ async def list_cars(
     return result.scalars().all()
 
 
-async def create_car(db: AsyncSession, car_data: CarCreate, images: List[UploadFile]) -> Car:
-    result = await db.execute(select(Car).where(Car.name == car_data.name))
-    if result.scalar_one_or_none():
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT, detail="Car name already exists."
-        )
-
+async def create_car(
+    db: AsyncSession, car_data: CarCreate, images: List[UploadFile]
+) -> Car:
     car_dict = car_data.model_dump(exclude={"images"})
     new_car = Car(**car_dict)
     db.add(new_car)
@@ -43,7 +39,9 @@ async def create_car(db: AsyncSession, car_data: CarCreate, images: List[UploadF
     for file in images:
         result_upload = await asyncio.to_thread(cloudinary.uploader.upload, file.file)
         new_image = Image(
-            url=result_upload["secure_url"], public_id=result_upload["public_id"], car_id=new_car.id
+            url=result_upload["secure_url"],
+            public_id=result_upload["public_id"],
+            car_id=new_car.id,
         )
         db.add(new_image)
 
@@ -76,7 +74,9 @@ async def update_car(db: AsyncSession, car_id: UUID, data: CarFormDependency):
 
     if data.images:
         for file in data.images:
-            result_upload = await asyncio.to_thread(cloudinary.uploader.upload, file.file)
+            result_upload = await asyncio.to_thread(
+                cloudinary.uploader.upload, file.file
+            )
             new_image = Image(
                 url=result_upload["secure_url"],
                 public_id=result_upload["public_id"],
@@ -112,11 +112,7 @@ async def delete_car(db: AsyncSession, car_id: UUID):
 async def get_car(db: AsyncSession, car_id: UUID):
     await purge_expired_sold_cars(db)
 
-    query = (
-        select(Car)
-        .options(selectinload(Car.images))
-        .where(Car.id == car_id)
-    )
+    query = select(Car).options(selectinload(Car.images)).where(Car.id == car_id)
     query = public_car_filter(query)
     result = await db.execute(query)
     car_instance = result.scalar_one_or_none()
@@ -125,4 +121,3 @@ async def get_car(db: AsyncSession, car_id: UUID):
             status_code=status.HTTP_404_NOT_FOUND, detail="Car not found"
         )
     return car_instance
-
