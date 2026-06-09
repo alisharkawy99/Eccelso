@@ -581,8 +581,8 @@ export default function CarDetailPage() {
                       )
                         return;
                       setMarkingSold(true);
-                      await adminMarkCarSold(car.id);
-                      await refreshCarData();
+                      const updated = await adminMarkCarSold(car.id);
+                      if (updated) setCar(updated);
                       setMarkingSold(false);
                     }}
                   >

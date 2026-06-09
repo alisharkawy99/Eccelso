@@ -63,6 +63,7 @@ export default function AdminPage() {
 
   useEffect(() => {
     if (authenticated) {
+      setLoading(true);
       adminGetCars().then((data) => {
         setCars(data);
         setLoading(false);

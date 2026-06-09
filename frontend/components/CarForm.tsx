@@ -30,6 +30,7 @@ import {
 interface CarFormProps {
   initialData?: Car;
   onClose: () => void;
+  onSuccess?: (car: Car) => void;
   isLoading?: boolean;
   setisLoading?: Dispatch<SetStateAction<boolean>>;
 }
@@ -67,6 +68,7 @@ function FormSection({
 export default function CarForm({
   initialData,
   onClose,
+  onSuccess,
   setisLoading,
   isLoading,
 }: CarFormProps) {
@@ -179,17 +181,23 @@ export default function CarForm({
 
     images.forEach((file) => formDataToSend.append("images", file));
     try {
+      let savedCar: Car;
       if (isEdit) {
-        await apiClient.patch(`/cars/${initialData?.id}`, formDataToSend, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
+        const { data } = await apiClient.patch<Car>(
+          `/cars/${initialData?.id}`,
+          formDataToSend,
+          { headers: { "Content-Type": "multipart/form-data" } },
+        );
+        savedCar = data;
       } else {
-        await apiClient.post("/cars", formDataToSend, {
+        const { data } = await apiClient.post<Car>("/cars", formDataToSend, {
           headers: { "Content-Type": "multipart/form-data" },
         });
+        savedCar = data;
       }
 
       setisLoading?.(false);
+      onSuccess?.(savedCar);
       onClose?.();
     } catch (error) {
       console.error("Submission error:", error);

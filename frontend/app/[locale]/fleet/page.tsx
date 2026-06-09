@@ -25,13 +25,21 @@ const FILTERS: {
   { key: "premium_suv", labelKey: "filterPremiumSuv", icon: Mountain },
 ];
 
-// ... keep your imports ...
+function carMatchesFilters(
+  car: Car,
+  activeFilter: "all" | CarCategory,
+  availableOnly: boolean,
+) {
+  if (activeFilter !== "all" && car.category !== activeFilter) return false;
+  if (availableOnly && car.sold) return false;
+  return true;
+}
 
 export default function FleetPage() {
   const t = useTranslations("fleet");
   const locale = useLocale();
   const isRTL = locale === "ar";
-  const { handleDeleteCar, isDeleting } = useCars();
+  const { handleDeleteCar: handleDeleteCarFromHook, isDeleting } = useCars();
   const { isAdmin } = useAuth();
   const [cars, setCars] = useState<Car[]>([]);
   const [loading, setLoading] = useState(true);
@@ -39,17 +47,16 @@ export default function FleetPage() {
   const [availableOnly, setAvailableOnly] = useState(false);
   const [openModal, setOpenModal] = useState(false);
   const [addingCar, setAddingCar] = useState(false);
+
   useEffect(() => {
     let isMounted = true;
     setLoading(true);
 
-    // If activeFilter is "all", fetch everything, else fetch by category
     const fetchPromise =
       activeFilter === "all" ? getCars() : getCarsByCategory(activeFilter);
 
     fetchPromise.then((data) => {
       if (isMounted) {
-        // Apply the "available only" filter locally (or move to backend if preferred)
         const finalData = availableOnly
           ? data.filter((car) => !car.sold)
           : data;
@@ -61,8 +68,30 @@ export default function FleetPage() {
     return () => {
       isMounted = false;
     };
-    // We include availableOnly in the dependency array so it refreshes the view when toggled
-  }, [activeFilter, availableOnly, addingCar, isDeleting]);
+  }, [activeFilter, availableOnly]);
+
+  const handleCarCreated = (car: Car) => {
+    if (!carMatchesFilters(car, activeFilter, availableOnly)) return;
+    setCars((prev) => [car, ...prev]);
+  };
+
+  const handleCarUpdated = (car: Car) => {
+    setCars((prev) => {
+      if (!carMatchesFilters(car, activeFilter, availableOnly)) {
+        return prev.filter((c) => c.id !== car.id);
+      }
+      const exists = prev.some((c) => c.id === car.id);
+      if (exists) {
+        return prev.map((c) => (c.id === car.id ? car : c));
+      }
+      return [car, ...prev];
+    });
+  };
+
+  const handleDeleteCar = async (id: string) => {
+    await handleDeleteCarFromHook(id);
+    setCars((prev) => prev.filter((c) => c.id !== id));
+  };
 
   // Now, 'cars' is already filtered from the backend, so we just map 'cars'
   return (
@@ -175,6 +204,7 @@ export default function FleetPage() {
                     car={car}
                     isAdmin={isAdmin}
                     onDelete={isAdmin ? () => handleDeleteCar(car.id) : undefined}
+                    onEditSuccess={handleCarUpdated}
                     isDeleting={isDeleting}
                   />
                 ))}
@@ -195,6 +225,7 @@ export default function FleetPage() {
           content={
             <CarForm
               onClose={() => setOpenModal(false)}
+              onSuccess={handleCarCreated}
               isLoading={addingCar}
               setisLoading={setAddingCar}
             />

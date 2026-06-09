@@ -25,6 +25,7 @@ interface ICarCardProps {
   car: Car;
   isAdmin?: boolean;
   onDelete?: () => Promise<void>;
+  onEditSuccess?: (car: Car) => void;
   isDeleting?: boolean;
 }
 
@@ -32,6 +33,7 @@ export default function CarCard({
   car,
   isAdmin = false,
   onDelete,
+  onEditSuccess,
   isDeleting,
 }: ICarCardProps) {
   const t = useTranslations("fleet");
@@ -239,7 +241,11 @@ export default function CarCard({
         subtitle="Update vehicle details and specifications"
         size="lg"
         content={
-          <CarForm onClose={() => setOpenModal(false)} initialData={car} />
+          <CarForm
+            onClose={() => setOpenModal(false)}
+            onSuccess={onEditSuccess}
+            initialData={car}
+          />
         }
       />
     </article>
