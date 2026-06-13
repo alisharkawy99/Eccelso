@@ -10,6 +10,12 @@ Base = declarative_base()
 
 
 def _build_async_engine_url(database_url: str) -> tuple[str, dict]:
+    if database_url.startswith("sqlite"):
+        connect_args = (
+            {"check_same_thread": False} if "aiosqlite" in database_url else {}
+        )
+        return database_url, connect_args
+
     url = database_url.replace("postgres://", "postgresql://", 1)
     if url.startswith("postgresql://"):
         url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
@@ -21,7 +27,8 @@ def _build_async_engine_url(database_url: str) -> tuple[str, dict]:
 
     connect_args: dict = {}
     sslmode = query.get("sslmode", [None])[0]
-    if sslmode in ("require", "verify-full", "verify-ca") or "neon.tech" in parsed.hostname:
+    hostname = parsed.hostname or ""
+    if sslmode in ("require", "verify-full", "verify-ca") or "neon.tech" in hostname:
         connect_args["ssl"] = True
 
     clean_url = urlunparse(parsed._replace(query=""))
